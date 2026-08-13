@@ -1,0 +1,7 @@
+# Markdown 文档不上传
+*.md
+
+# 爬虫脚本
+Spider_Script/*.py
+Spider_Script/*.cmd
+Spider_Script/__pycache__/

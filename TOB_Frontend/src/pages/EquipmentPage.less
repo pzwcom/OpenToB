@@ -1,0 +1,660 @@
+.equip {
+  padding: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-100);
+  }
+
+  // ===== 装备栏（顶部） =====
+
+  &__bar {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  &__slots {
+    display: grid;
+    grid-template-columns: 95px 95px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  &__slots-sm {
+    display: grid;
+    grid-template-columns: repeat(4, 80px);
+    grid-template-rows: repeat(2, 80px);
+    gap: 12px;
+    justify-content: start;
+  }
+
+  &__slot {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #28282c;
+    background: #18181b;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: #27272a;
+    }
+
+    &--lg {
+      width: 95px;
+      height: 172px;
+    }
+
+    &--sm {
+      width: 80px;
+      height: 80px;
+    }
+  }
+
+  &__slot-bg {
+    position: absolute;
+    inset: 5%;
+    width: 90%;
+    height: 90%;
+    object-fit: contain;
+    opacity: 0.1;
+    pointer-events: none;
+  }
+
+  &__slot-item {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  &__slot-plus {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+    color: #8a8a8a;
+    opacity: 0.9;
+    pointer-events: none;
+  }
+
+  // ===== 装备库存（下方） =====
+
+  &__inventory {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px;
+    background: rgba(24, 24, 27, 0.5);
+    border: 1px solid rgba(63, 63, 70, 0.5);
+    border-radius: 12px;
+    scroll-margin-top: 12px;
+  }
+
+  &__inventory-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  &__panel-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-200);
+  }
+
+  &__inv-toolbar {
+    display: flex;
+    gap: 8px;
+  }
+
+  &__inv-filter {
+    width: 140px;
+  }
+
+  &__inv-empty {
+    padding: 24px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-600);
+    background: var(--bg-900);
+    border: 1px dashed var(--bg-700);
+    border-radius: 10px;
+  }
+
+  &__inv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px;
+  }
+
+  &__inv-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--bg-900);
+    border: 1px solid var(--bg-800);
+    border-radius: 10px;
+    min-width: 0;
+  }
+
+  // 库存卡片稀有度背景（Spec/前端设计/装备页面设计.md §5.1）：传奇=橙；普通/渴瘾按词缀条数 0-2 蓝 / 3-4 粉 / 5-6 红
+  &__inv-card--legend {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.4);
+  }
+
+  &__inv-card--affix-0-2 {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.4);
+  }
+
+  &__inv-card--affix-3-4 {
+    background: rgba(236, 72, 153, 0.12);
+    border-color: rgba(236, 72, 153, 0.4);
+  }
+
+  &__inv-card--affix-5-6 {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.4);
+  }
+
+  &__inv-card-thumb {
+    width: 100%;
+    height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-950);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  &__inv-card-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  &__inv-card-img-ph {
+    font-size: 22px;
+    color: var(--text-600);
+  }
+
+  &__inv-card-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__inv-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  &__inv-card-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-100);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // 传奇装备名字橙色；普通/渴瘾名字默认白
+  &__inv-card-name--legend {
+    color: #f59e0b;
+  }
+
+  &__inv-card-rarity {
+    flex-shrink: 0;
+    padding: 0 6px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.6;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  &__inv-card-rarity--legend {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.18);
+  }
+
+  &__inv-card-rarity--blue {
+    color: #60a5fa;
+    background: rgba(59, 130, 246, 0.18);
+  }
+
+  &__inv-card-rarity--pink {
+    color: #f472b6;
+    background: rgba(236, 72, 153, 0.18);
+  }
+
+  &__inv-card-rarity--red {
+    color: #f87171;
+    background: rgba(239, 68, 68, 0.18);
+  }
+
+  &__inv-card-meta {
+    font-size: 11px;
+    color: var(--text-500);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__inv-card-equipped {
+    align-self: flex-start;
+    margin-top: 2px;
+    padding: 0 6px;
+    font-size: 11px;
+    color: var(--amber-300);
+    background: rgba(245, 158, 11, 0.15);
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+
+  &__inv-card-affixes {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 11px;
+    color: var(--text-400);
+    line-height: 1.5;
+    min-height: 0;
+  }
+
+  &__inv-card-affix {
+    word-break: break-all;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.25);
+  }
+
+  &__inv-card-affix-tier {
+    margin-left: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  &__inv-card-affix--corrupted {
+    color: #ef4444;
+  }
+
+  &__inv-card-corrupted-tag {
+    margin-left: 4px;
+    font-size: 10px;
+    color: #ef4444;
+  }
+
+  &__inv-card-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  // ===== 装备编辑 Drawer =====
+
+  &__edit-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__edit-preview {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-900);
+    border: 1px solid var(--bg-800);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  &__edit-preview-img,
+  &__edit-preview-icon {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  &__edit-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__edit-field--browser {
+    display: block;
+  }
+
+  &__edit-field-label {
+    flex-shrink: 0;
+    width: 72px;
+    font-size: 12px;
+    color: var(--text-400);
+  }
+
+  &__edit-field-control {
+    flex: 1;
+    min-width: 0;
+
+    .ant-select {
+      width: 100%;
+    }
+  }
+
+  &__edit-pick {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &__edit-pick-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-500);
+  }
+
+  &__edit-pick-strip {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+
+  &__edit-pick-card {
+    position: relative;
+    flex-shrink: 0;
+    width: 72px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover {
+      background: rgba(63, 63, 70, 0.4);
+    }
+
+    &--equipped {
+      background: rgba(245, 158, 11, 0.1);
+    }
+  }
+
+  &__edit-pick-img {
+    width: 100%;
+    height: 56px;
+    object-fit: contain;
+    border-radius: 6px;
+  }
+
+  &__edit-pick-name {
+    font-size: 10px;
+    color: var(--text-300);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__edit-pick-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    padding: 0 4px;
+    font-size: 9px;
+    color: var(--amber-300);
+    background: rgba(245, 158, 11, 0.15);
+    border-radius: 4px;
+  }
+
+  &__edit-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 10px;
+    background: var(--bg-900);
+    border-radius: 8px;
+  }
+
+  &__edit-info-row {
+    display: flex;
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  &__edit-info-label {
+    flex-shrink: 0;
+    width: 72px;
+    color: var(--text-600);
+  }
+
+  &__edit-info-value {
+    color: var(--text-300);
+    word-break: break-all;
+  }
+
+  &__edit-affixes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__edit-affixes-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-500);
+  }
+
+  &__edit-affix {
+    word-break: break-all;
+  }
+
+  &__edit-affix-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  &__edit-affix--corrupted &__edit-affix-text {
+    color: #ef4444;
+  }
+
+  &__edit-affix-text {
+    flex: 1;
+    min-width: 0;
+    font-size: 12px;
+    color: var(--text-300);
+    line-height: 1.5;
+  }
+
+  &__edit-affix-corrupted-tag {
+    margin-left: 4px;
+    font-size: 10px;
+    color: #ef4444;
+  }
+
+  &__edit-affix-erode {
+    flex-shrink: 0;
+  }
+
+  &__edit-range {
+    margin: 2px 6px 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__edit-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  &__edit-save {
+    flex: 1;
+  }
+
+  // ===== 渴瘾装备编辑 =====
+
+  &__graft {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__graft-base,
+  &__graft-legend,
+  &__graft-craft,
+  &__graft-perfume,
+  &__graft-tower {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &__graft-select {
+    width: 100%;
+  }
+
+  &__graft-craft-row {
+    display: flex;
+    gap: 8px;
+
+    .equip__graft-select {
+      flex: 1;
+    }
+  }
+
+  &__graft-legend-affixes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  &__graft-legend-affix {
+    position: relative;
+    padding: 4px 10px;
+    border: 1px solid var(--bg-700);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--text-300);
+    font-size: 12px;
+    line-height: 1.4;
+    text-align: left;
+    cursor: pointer;
+
+    &.is-active {
+      border-color: var(--amber-500);
+      color: var(--amber-500);
+      background: rgba(255, 170, 0, 0.08);
+    }
+  }
+
+  &__graft-legend-count {
+    margin-left: 4px;
+    font-weight: 700;
+  }
+
+  // ===== 词缀 selector 选项（规范见 Spec/前端设计/前端界面总设计.md §5）=====
+
+  &__edit-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+  }
+
+  &__edit-option-text {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+  }
+
+  &__edit-option-tier {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  &__graft-source-tag {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 0 4px;
+    font-size: 10px;
+    line-height: 1.5;
+    border-radius: 3px;
+    border: 1px solid var(--bg-700);
+    color: var(--text-500);
+    vertical-align: middle;
+  }
+
+  // ===== 词缀 Tier 颜色（T7~T2 紫 / T1 橙 / T0 红） =====
+
+  &__affix--purple {
+    color: #c084fc;
+  }
+
+  &__affix--orange {
+    color: #f59e0b;
+  }
+
+  &__affix--red {
+    color: #ef4444;
+  }
+}
+
+@media (max-width: 860px) {
+  .equip {
+    &__slots {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    &__slots-sm {
+      grid-template-columns: repeat(2, 80px);
+      grid-template-rows: repeat(4, 80px);
+    }
+  }
+}

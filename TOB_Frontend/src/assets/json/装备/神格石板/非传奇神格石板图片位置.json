@@ -1,0 +1,158 @@
+{
+  "狩猎之神的神格": [
+    {
+      "图标": "UITalantNGZ10IconAgi112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_Z1_0_Icon_Agi_112.webp"
+    },
+    {
+      "图标": "UITalantNGZ20IconAgi112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_Z2_0_Icon_Agi_112.webp"
+    },
+    {
+      "图标": "UITalantNGL10IconAgi112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_L1_0_Icon_Agi_112.webp"
+    },
+    {
+      "图标": "UITalantNGL20IconAgi112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_L2_0_Icon_Agi_112.webp"
+    },
+    {
+      "图标": "UITalantNGO10IconAgi112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_O1_0_Icon_Agi_112.webp"
+    },
+    {
+      "图标": "UITalantNGT10IconAgi112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_T1_0_Icon_Agi_112.webp"
+    }
+  ],
+  "欺诈之神的神格": [
+    {
+      "图标": "UITalantNGZ10IconAI112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_Z1_0_Icon_AI_112.webp"
+    },
+    {
+      "图标": "UITalantNGZ20IconAI112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_Z2_0_Icon_AI_112.webp"
+    },
+    {
+      "图标": "UITalantNGL10IconAI112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_L1_0_Icon_AI_112.webp"
+    },
+    {
+      "图标": "UITalantNGL20IconAI112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_L2_0_Icon_AI_112.webp"
+    },
+    {
+      "图标": "UITalantNGO10IconAI112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_O1_0_Icon_AI_112.webp"
+    },
+    {
+      "图标": "UITalantNGT10IconAI112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_T1_0_Icon_AI_112.webp"
+    }
+  ],
+  "知识之神的神格": [
+    {
+      "图标": "UITalantNGZ10IconInt112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_Z1_0_Icon_Int_112.webp"
+    },
+    {
+      "图标": "UITalantNGZ20IconInt112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_Z2_0_Icon_Int_112.webp"
+    },
+    {
+      "图标": "UITalantNGL10IconInt112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_L1_0_Icon_Int_112.webp"
+    },
+    {
+      "图标": "UITalantNGL20IconInt112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_L2_0_Icon_Int_112.webp"
+    },
+    {
+      "图标": "UITalantNGO10IconInt112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_O1_0_Icon_Int_112.webp"
+    },
+    {
+      "图标": "UITalantNGT10IconInt112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_T1_0_Icon_Int_112.webp"
+    }
+  ],
+  "征战之神的神格": [
+    {
+      "图标": "UITalantNGZ10IconSA112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_Z1_0_Icon_SA_112.webp"
+    },
+    {
+      "图标": "UITalantNGZ20IconSA112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_Z2_0_Icon_SA_112.webp"
+    },
+    {
+      "图标": "UITalantNGL10IconSA112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_L1_0_Icon_SA_112.webp"
+    },
+    {
+      "图标": "UITalantNGL20IconSA112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_L2_0_Icon_SA_112.webp"
+    },
+    {
+      "图标": "UITalantNGO10IconSA112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_O1_0_Icon_SA_112.webp"
+    },
+    {
+      "图标": "UITalantNGT10IconSA112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_T1_0_Icon_SA_112.webp"
+    }
+  ],
+  "机械之神的神格": [
+    {
+      "图标": "UITalantNGZ10IconSI112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_Z1_0_Icon_SI_112.webp"
+    },
+    {
+      "图标": "UITalantNGZ20IconSI112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_Z2_0_Icon_SI_112.webp"
+    },
+    {
+      "图标": "UITalantNGL10IconSI112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_L1_0_Icon_SI_112.webp"
+    },
+    {
+      "图标": "UITalantNGL20IconSI112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_L2_0_Icon_SI_112.webp"
+    },
+    {
+      "图标": "UITalantNGO10IconSI112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_O1_0_Icon_SI_112.webp"
+    },
+    {
+      "图标": "UITalantNGT10IconSI112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_T1_0_Icon_SI_112.webp"
+    }
+  ],
+  "巨力之神的神格": [
+    {
+      "图标": "UITalantNGZ10IconStr112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_Z1_0_Icon_Str_112.webp"
+    },
+    {
+      "图标": "UITalantNGZ20IconStr112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_Z2_0_Icon_Str_112.webp"
+    },
+    {
+      "图标": "UITalantNGL10IconStr112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_L1_0_Icon_Str_112.webp"
+    },
+    {
+      "图标": "UITalantNGL20IconStr112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_L2_0_Icon_Str_112.webp"
+    },
+    {
+      "图标": "UITalantNGO10IconStr112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_O1_0_Icon_Str_112.webp"
+    },
+    {
+      "图标": "UITalantNGT10IconStr112",
+      "图片地址": "/图片/装备/神格石板/非传奇神格石板/UI_TalantNG_T1_0_Icon_Str_112.webp"
+    }
+  ]
+}

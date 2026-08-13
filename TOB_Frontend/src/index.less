@@ -1,0 +1,39 @@
+@import './styles/theme.less';
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-950);
+  color: var(--text-200);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-950);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-800);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bg-700);
+}
+
+.modal-footer-row {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+}

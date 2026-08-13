@@ -1,0 +1,50 @@
+.builder {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-950);
+
+  &__body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+
+  &__main {
+    flex: 1;
+    min-width: 0;
+    overflow-y: auto;
+  }
+
+  &__tabbar {
+    border-bottom: 1px solid var(--bg-800);
+    background: var(--bg-900);
+  }
+
+  &__tabs {
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+  }
+
+  &__tab {
+    padding: 10px 16px;
+    margin-bottom: -1px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-400);
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.15s;
+
+    &:hover {
+      color: var(--text-200);
+    }
+
+    &--active {
+      color: var(--amber-400);
+      border-bottom-color: var(--amber-500);
+    }
+  }
+}

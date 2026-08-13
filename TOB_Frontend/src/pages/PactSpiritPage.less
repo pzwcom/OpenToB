@@ -1,0 +1,854 @@
+.pact {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.pact__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pact__title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.pact__header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ===== 契灵&命运 区块 ===== */
+.pact__section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.pact__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #353538;
+  padding-bottom: 8px;
+}
+
+.pact__section-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fcfcfc;
+}
+
+.pact__section-count {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.pact__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ===== 契灵行 ===== */
+.pact__row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 104px;
+  border: 1px solid #28282c;
+  background: #18181b;
+  overflow: hidden;
+}
+
+.pact__row--empty {
+  width: 100%;
+  color: rgba(255, 255, 255, 0.3);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pact__row--empty:hover {
+  background: #27272a;
+}
+
+/* ===== 头像区 ===== */
+.pact__portrait {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 96px;
+  height: 104px;
+  margin-left: 8px;
+  padding: 10px 0 6px;
+}
+
+.pact__portrait-thumb {
+  position: relative;
+  width: 56px;
+  height: 56px;
+}
+
+.pact__portrait-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+  background: #101013;
+  box-shadow: 0 0 0 2px #28282c;
+}
+
+.pact__portrait-img--empty {
+  background: #101013;
+}
+
+.pact__remove {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  cursor: pointer;
+  z-index: 20;
+  transition: background 0.15s;
+}
+
+.pact__remove:hover {
+  background: #dc2626;
+}
+
+/* ===== 等级步进器 ===== */
+.pact__level {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 999px;
+  border: 1px solid #1d2430;
+  background: #000;
+  color: #8a95a5;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.pact__level-btn {
+  flex: 0 0 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 0;
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: #8a95a5;
+  font-size: 12px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.2s,
+    width 0.2s,
+    color 0.2s;
+}
+
+.pact__level:hover .pact__level-btn {
+  width: 26px;
+  opacity: 1;
+}
+
+.pact__level-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.pact__level-minus,
+.pact__level-plus {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pact__level-num {
+  flex-shrink: 0;
+  width: 12px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: Consolas, 'Courier New', monospace;
+  color: #60a5fa;
+  pointer-events: none;
+}
+
+/* ===== 竖向分隔虚线 ===== */
+.pact__divider {
+  flex-shrink: 0;
+  width: 1px;
+  height: 104px;
+  margin: 0 15px;
+  background-image: linear-gradient(to bottom, #28282c 50%, transparent 50%);
+  background-size: 1px 4px;
+}
+
+/* ===== 契约链 ===== */
+.pact__chain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.pact__chain-item {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.pact__link {
+  width: 20px;
+  height: 2px;
+  flex-shrink: 0;
+  background: #3c3c3f;
+}
+
+/* ===== 契约节点 ===== */
+.pact__node {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px dashed #3c3c3f;
+  background: #18181b;
+  overflow: hidden;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+
+.pact__node:hover {
+  border-color: #6b7280;
+}
+
+.pact__node-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.5);
+}
+
+.pact__node-img--muted {
+  opacity: 0.5;
+}
+
+/* 小型节点（内环影响）：最小 */
+.pact__node--small {
+  width: 30px;
+  height: 30px;
+}
+
+/* 中型节点（中环影响）：比小型大一档，虚线边框加粗 */
+.pact__node--medium {
+  width: 42px;
+  height: 42px;
+  border-width: 3px;
+  border-color: #5b6572;
+}
+
+.pact__node--medium:hover {
+  border-color: #8a95a5;
+}
+
+/* 已被替换的节点：金色实线高亮 */
+.pact__node--replaced {
+  border-style: solid;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.12), 0 0 10px rgba(245, 158, 11, 0.18);
+}
+
+.pact__node--replaced:hover {
+  border-color: #fbbf24;
+}
+
+/* 核心节点（外环影响）：最大，金色高亮 */
+.pact__node--core {
+  width: 56px;
+  height: 56px;
+  border: 3px solid #f59e0b;
+  background: rgba(245, 158, 11, 0.18);
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.12), 0 0 14px rgba(245, 158, 11, 0.2);
+  cursor: default;
+}
+
+.pact__node--core:hover {
+  border-color: #fbbf24;
+}
+
+/* 命运槽位 */
+.pact__node--destiny {
+  width: 38px;
+  height: 38px;
+  border: 2px dashed #3c3c3f;
+}
+
+.pact__node--destiny-filled {
+  border-style: solid;
+  border-color: #f59e0b;
+}
+
+/* ===== 空槽位 ===== */
+.pact__empty-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  margin: 22px 0 22px 16px;
+  border: 1px dashed #353538;
+  background: #060607;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 18px;
+}
+
+.pact__empty-text {
+  white-space: nowrap;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* ===== 命运计数器 ===== */
+.pact__counters {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  background: #18181b;
+  border: 1px solid #28282c;
+  padding: 8px 12px;
+}
+
+.pact__counter {
+  font-size: 18px;
+  font-weight: 700;
+  color: #a1a1aa;
+}
+
+.pact__counter-num {
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ===== 悬浮提示 ===== */
+.pact__spirit-tip {
+  max-width: 320px;
+}
+
+.pact__spirit-tip-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.pact__spirit-tip-meta {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 4px;
+}
+
+.pact__spirit-tip-level {
+  font-size: 12px;
+  color: #d1d5db;
+  margin-bottom: 6px;
+}
+
+.pact__spirit-tip-affix {
+  font-size: 12px;
+  color: #d1d5db;
+  line-height: 1.7;
+  border-top: 1px solid #353538;
+  padding-top: 6px;
+}
+
+.pact__spirit-tip-affix-label {
+  color: #eab308;
+  margin-right: 4px;
+}
+
+.pact__spirit-tip-affix-text {
+  word-break: break-all;
+}
+
+/* ===== 契约节点悬浮提示 ===== */
+.pact__node-tip {
+  max-width: 320px;
+}
+
+.pact__node-tip-text {
+  font-size: 12px;
+  color: #d1d5db;
+}
+
+.pact__node-tip-boost {
+  font-size: 12px;
+  font-weight: 600;
+  color: #eab308;
+  margin-top: 4px;
+}
+
+.pact__node-tip-affix {
+  font-size: 12px;
+  color: #d1d5db;
+  line-height: 1.7;
+  border-top: 1px solid #353538;
+  padding-top: 6px;
+  margin-top: 6px;
+}
+
+.pact__node-tip-affix-label {
+  color: #eab308;
+  margin-right: 4px;
+}
+
+.pact__node-tip-affix-text {
+  word-break: break-all;
+}
+
+/* ===== 契灵选择弹窗 ===== */
+.pact__search {
+  margin-bottom: 12px;
+}
+
+.pact__picker-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.pact__picker-group + .pact__picker-group {
+  margin-top: 16px;
+}
+
+.pact__picker-group-title {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #d1a05c;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pact__picker-group-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, rgba(209, 160, 92, 0.35), transparent);
+}
+
+.pact__picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 8px;
+}
+
+.pact__picker-none {
+  grid-column: 1 / -1;
+  padding: 32px 0;
+  text-align: center;
+  color: #9ca3af;
+}
+
+.pact__picker-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  background: #18181b;
+  border: 1px solid #28282c;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #e5e7eb;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.pact__picker-item:hover:not(.pact__picker-item--disabled) {
+  border-color: #3c3c3f;
+  background: #1f1f22;
+}
+
+.pact__picker-item--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pact__picker-img {
+  width: 44px;
+  height: 44px;
+  display: block;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #060607;
+}
+
+.pact__picker-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pact__picker-name {
+  font-size: 12px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.pact__picker-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 10px;
+  color: #9ca3af;
+  background: #000;
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+
+/* ===== 选择弹窗悬浮提示 ===== */
+.pact__pick-tip {
+  max-width: 320px;
+}
+
+.pact__pick-tip-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.pact__pick-tip-meta {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 8px;
+}
+
+.pact__pick-tip-affixes {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.pact__pick-tip-affix {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  color: #d1d5db;
+  line-height: 1.7;
+}
+
+.pact__pick-tip-type {
+  flex-shrink: 0;
+  font-size: 11px;
+  padding: 0 5px;
+  border-radius: 3px;
+}
+
+.pact__pick-tip-type--小型 {
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.pact__pick-tip-type--中型 {
+  color: #c4b5fd;
+  background: rgba(139, 92, 246, 0.15);
+}
+
+.pact__pick-tip-type--核心 {
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.pact__pick-tip-text {
+  word-break: break-all;
+}
+
+.pact__pick-tip-core {
+  font-size: 12px;
+  color: #fbbf24;
+  line-height: 1.7;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 4px;
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.pact__pick-tip-core-name {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.pact__pick-tip-core-desc {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: #d1d5db;
+  border-top: 1px solid rgba(245, 158, 11, 0.25);
+  margin-top: 4px;
+  padding-top: 4px;
+}
+
+.pact__pick-tip-affix-label {
+  flex-shrink: 0;
+  color: #eab308;
+  margin-right: 4px;
+}
+
+/* ===== 命运选择弹窗 ===== */
+.pact__destiny-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pact__destiny-group-title {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pact__destiny-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.pact__destiny-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  padding: 8px 10px;
+  background: #18181b;
+  border: 1px solid #28282c;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #e5e7eb;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.pact__destiny-item:hover:not(.pact__destiny-item--disabled) {
+  border-color: #3c3c3f;
+  background: #1f1f22;
+}
+
+.pact__destiny-item--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pact__destiny-name {
+  font-size: 12px;
+  color: #eab308;
+  font-weight: 600;
+}
+
+.pact__destiny-desc {
+  font-size: 11px;
+  color: #9ca3af;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+.pact__destiny-added {
+  font-size: 10px;
+  color: #22c55e;
+}
+
+.pact__destiny-item--current {
+  border-color: #f59e0b;
+}
+
+/* ===== 替换弹窗 ===== */
+.pact__replace-actions {
+  margin-bottom: 8px;
+}
+
+.pact__restore-btn {
+  padding: 4px 12px;
+  font-size: 12px;
+  color: #eab308;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.pact__restore-btn:hover {
+  background: rgba(245, 158, 11, 0.2);
+}
+
+.pact__quota-hint {
+  font-size: 12px;
+  color: #f87171;
+  margin-bottom: 8px;
+}
+
+/* ===== 未定宿命添加列表（契灵行下方） ===== */
+.pact__additions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding-left: 8px;
+}
+
+.pact__spirit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pact__additions-current {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.pact__addition {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  color: #e5e7eb;
+  background: #18181b;
+  border: 1px solid #3c3c3f;
+  border-radius: 4px;
+}
+
+.pact__addition--small {
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.pact__addition--medium {
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+.pact__addition-label {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.pact__addition-name {
+  color: #fbbf24;
+}
+
+.pact__addition-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.pact__addition-remove:hover {
+  color: #ef4444;
+}
+
+/* 未定宿命槽位角标（显示已添加数量） */
+.pact__node-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  background: #f59e0b;
+  border-radius: 999px;
+  border: 1px solid #18181b;
+}
+
+/* ===== 数值选择弹窗（滑动块） ===== */
+.pact__value-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 4px;
+}
+
+.pact__value-desc {
+  font-size: 13px;
+  color: #e5e7eb;
+  line-height: 1.7;
+  word-break: break-all;
+}
+
+.pact__value-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

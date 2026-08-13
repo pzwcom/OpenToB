@@ -1,0 +1,1376 @@
+{
+  "本源的追忆": [
+    {
+      "Tier": "1",
+      "Modifier": "+2英雄特性等级",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(18–22)%移动速度",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(2–4)%火焰抗性上限",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(2–4)%冰冷抗性上限",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(2–4)%闪电抗性上限",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(2–4)%腐蚀抗性上限",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(26–30)%几率避免元素异常状态",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫减速",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫致盲",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫虚弱",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫瘫痪",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "(-60–-40)%受到诅咒效果",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+32%技能范围",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+23%技能范围",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+15%技能范围",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(38–42)%暴击伤害",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(20–26)%暴击伤害",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(12–18)%暴击伤害",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+30%投射物速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+24%投射物速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+16%投射物速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+80%暴击值",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+60%暴击值",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+40%暴击值",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+16%攻击速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+10%攻击速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+6%攻击速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+16%施法速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+10%施法速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+6%施法速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(20–30)%加剧效果",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(14–18)%加剧效果",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(10–12)%加剧效果",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(24–32)%收割回复速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(14–22)%收割回复速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(10–12)%收割回复速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(28–31)%召唤物暴击伤害",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(20–26)%召唤物暴击伤害",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(12–18)%召唤物暴击伤害",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+80%召唤物暴击值",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+60%召唤物暴击值",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+40%召唤物暴击值",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+16%召唤物攻击速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+10%召唤物攻击速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+6%召唤物攻击速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+16%召唤物施法速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+10%召唤物施法速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+6%召唤物施法速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(44–52)%召唤物伤害",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(30–42)%召唤物伤害",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(20–28)%召唤物伤害",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(15–21)%攻击格挡率",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(10–14)%攻击格挡率",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(6–9)%攻击格挡率",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(15–21)%法术格挡率",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(10–14)%法术格挡率",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(6–9)%法术格挡率",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(44–52)%伤害",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(30–42)%伤害",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(20–28)%伤害",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(10–14)%最大生命",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(6–8)%最大生命",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(4–6)%最大生命",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(10–14)%最大护盾",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(6–8)%最大护盾",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(4–6)%最大护盾",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(26–30)%护甲值",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(20–25)%护甲值",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(12–18)%护甲值",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(26–30)%闪避值",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(20–25)%闪避值",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(12–18)%闪避值",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+10%冷却回复速度",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫点燃伤害-100%受到点燃效果",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫凋零伤害",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫创伤伤害",
+      "Level": "86",
+      "Weight": "103"
+    }
+  ],
+  "守己的追忆": [
+    {
+      "Tier": "1",
+      "Modifier": "+2英雄特性等级",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(18–22)%移动速度",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(2–4)%火焰抗性上限",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(2–4)%冰冷抗性上限",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(2–4)%闪电抗性上限",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(2–4)%腐蚀抗性上限",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(26–30)%几率避免元素异常状态",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫减速",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫致盲",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫虚弱",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫瘫痪",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "(-60–-40)%受到诅咒效果",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+32%技能范围",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+23%技能范围",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+15%技能范围",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(38–42)%暴击伤害",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(20–26)%暴击伤害",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(12–18)%暴击伤害",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+30%投射物速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+24%投射物速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+16%投射物速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+80%暴击值",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+60%暴击值",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+40%暴击值",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+16%攻击速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+10%攻击速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+6%攻击速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+16%施法速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+10%施法速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+6%施法速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(20–30)%加剧效果",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(14–18)%加剧效果",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(10–12)%加剧效果",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(24–32)%收割回复速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(14–22)%收割回复速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(10–12)%收割回复速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(28–31)%召唤物暴击伤害",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(20–26)%召唤物暴击伤害",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(12–18)%召唤物暴击伤害",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+80%召唤物暴击值",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+60%召唤物暴击值",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+40%召唤物暴击值",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+16%召唤物攻击速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+10%召唤物攻击速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+6%召唤物攻击速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+16%召唤物施法速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+10%召唤物施法速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+6%召唤物施法速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(44–52)%召唤物伤害",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(30–42)%召唤物伤害",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(20–28)%召唤物伤害",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(15–21)%攻击格挡率",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(10–14)%攻击格挡率",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(6–9)%攻击格挡率",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(15–21)%法术格挡率",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(10–14)%法术格挡率",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(6–9)%法术格挡率",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(44–52)%伤害",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(30–42)%伤害",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(20–28)%伤害",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(10–14)%最大生命",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(6–8)%最大生命",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(4–6)%最大生命",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(10–14)%最大护盾",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(6–8)%最大护盾",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(4–6)%最大护盾",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(26–30)%护甲值",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(20–25)%护甲值",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(12–18)%护甲值",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(26–30)%闪避值",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(20–25)%闪避值",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(12–18)%闪避值",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+10%冷却回复速度",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫点燃伤害-100%受到点燃效果",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫凋零伤害",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫创伤伤害",
+      "Level": "86",
+      "Weight": "103"
+    }
+  ],
+  "奋进的追忆": [
+    {
+      "Tier": "1",
+      "Modifier": "+2英雄特性等级",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(18–22)%移动速度",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(2–4)%火焰抗性上限",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(2–4)%冰冷抗性上限",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(2–4)%闪电抗性上限",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(2–4)%腐蚀抗性上限",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(26–30)%几率避免元素异常状态",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫减速",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫致盲",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫虚弱",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫瘫痪",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "(-60–-40)%受到诅咒效果",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+32%技能范围",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+23%技能范围",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+15%技能范围",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(38–42)%暴击伤害",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(20–26)%暴击伤害",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(12–18)%暴击伤害",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+30%投射物速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+24%投射物速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+16%投射物速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+80%暴击值",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+60%暴击值",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+40%暴击值",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+16%攻击速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+10%攻击速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+6%攻击速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+16%施法速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+10%施法速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+6%施法速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(20–30)%加剧效果",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(14–18)%加剧效果",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(10–12)%加剧效果",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(24–32)%收割回复速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(14–22)%收割回复速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(10–12)%收割回复速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(28–31)%召唤物暴击伤害",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(20–26)%召唤物暴击伤害",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(12–18)%召唤物暴击伤害",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+80%召唤物暴击值",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+60%召唤物暴击值",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+40%召唤物暴击值",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+16%召唤物攻击速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+10%召唤物攻击速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+6%召唤物攻击速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+16%召唤物施法速度",
+      "Level": "86",
+      "Weight": "615"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+10%召唤物施法速度",
+      "Level": "82",
+      "Weight": "1229"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+6%召唤物施法速度",
+      "Level": "1",
+      "Weight": "4612"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(44–52)%召唤物伤害",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(30–42)%召唤物伤害",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(20–28)%召唤物伤害",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(15–21)%攻击格挡率",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(10–14)%攻击格挡率",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(6–9)%攻击格挡率",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(15–21)%法术格挡率",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(10–14)%法术格挡率",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(6–9)%法术格挡率",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(44–52)%伤害",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(30–42)%伤害",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(20–28)%伤害",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(10–14)%最大生命",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(6–8)%最大生命",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(4–6)%最大生命",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(10–14)%最大护盾",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(6–8)%最大护盾",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(4–6)%最大护盾",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(26–30)%护甲值",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(20–25)%护甲值",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(12–18)%护甲值",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+(26–30)%闪避值",
+      "Level": "86",
+      "Weight": "1333"
+    },
+    {
+      "Tier": "2",
+      "Modifier": "+(20–25)%闪避值",
+      "Level": "82",
+      "Weight": "2664"
+    },
+    {
+      "Tier": "3",
+      "Modifier": "+(12–18)%闪避值",
+      "Level": "1",
+      "Weight": "9992"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+10%冷却回复速度",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫点燃伤害-100%受到点燃效果",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫凋零伤害",
+      "Level": "86",
+      "Weight": "103"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "免疫创伤伤害",
+      "Level": "86",
+      "Weight": "103"
+    }
+  ]
+}

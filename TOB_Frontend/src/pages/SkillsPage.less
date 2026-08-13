@@ -1,0 +1,631 @@
+.sk {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.sk__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sk__title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.sk__header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sk__body {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.sk__box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sk__box--bars {
+  min-width: 520px;
+}
+
+.sk__box--detail {
+  flex: 1;
+  min-width: 340px;
+}
+
+.sk__box-title {
+  display: flex;
+  align-items: center;
+  height: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e5e7eb;
+  padding-left: 2px;
+}
+
+.sk__bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sk__group-title {
+  display: flex;
+  align-items: center;
+  height: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e5e7eb;
+  margin-bottom: 6px;
+  padding-left: 2px;
+}
+
+/* ===== 技能栏网格（复刻 91tob 元素：1px 间隙 + #18181b 格子） ===== */
+.sk-grid {
+  display: grid;
+  gap: 1px;
+  background: #0a0a0c;
+  border: 1px solid #18181b;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.sk-grid--main {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sk-grid--passive {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sk-cell {
+  background: #18181b;
+  height: 60px;
+}
+
+.sk-cell--wide {
+  grid-column: span 2;
+}
+
+.sk-cell__inner {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 12px;
+  overflow: hidden;
+}
+
+.sk-cell__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.sk-sockets {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ===== 六边形主技能按钮 ===== */
+.sk-hex {
+  position: relative;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+}
+
+.sk-hex__frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.sk-hex__frame path {
+  fill: rgba(6, 6, 7, 0.7);
+  stroke: #28282c;
+  transition:
+    fill 0.2s,
+    stroke 0.2s;
+}
+
+.sk-hex:hover .sk-hex__frame path {
+  fill: rgba(15, 16, 18, 0.8);
+  stroke: #3c3c3f;
+}
+
+.sk-hex:focus-visible {
+  outline: 2px solid rgba(4, 133, 247, 0.6);
+}
+
+.sk-hex__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.sk-hex__plus {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.sk-hex__plus path {
+  stroke: rgba(255, 255, 255, 0.3);
+  stroke-width: 1.5;
+  fill: none;
+  transition: stroke 0.2s;
+}
+
+.sk-hex:hover .sk-hex__plus path {
+  stroke: rgba(255, 255, 255, 0.5);
+}
+
+/* ===== 圆形辅助技能槽 ===== */
+.sk-socket {
+  position: relative;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #28282c;
+  background: #060607;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition:
+    border-color 0.2s,
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+
+.sk-socket:hover {
+  border-color: #3c3c3f;
+  transform: translateY(-1px);
+}
+
+.sk-socket:focus-visible {
+  outline: 2px solid rgba(4, 133, 247, 0.6);
+}
+
+.sk-socket__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.sk-socket__plus {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 14px;
+}
+
+.sk-socket__slash {
+  width: 12px;
+  height: 12px;
+}
+
+.sk-socket__slash path {
+  stroke: #28282c;
+  stroke-width: 1;
+  fill: none;
+}
+
+.sk-socket--locked {
+  cursor: default;
+  background: #131316;
+}
+
+.sk-socket--locked:hover {
+  transform: none;
+  border-color: #28282c;
+}
+
+// 标签不匹配：置灰
+.sk-socket--mismatch {
+  border-color: #3c3c3f !important;
+  opacity: 0.45;
+}
+
+.sk-socket--mismatch:hover {
+  transform: none;
+  border-color: #3c3c3f;
+}
+
+.sk-socket--mismatch .sk-socket__img {
+  filter: grayscale(1);
+}
+
+/* ===== 技能栏位编号 #N ===== */
+.sk-cell__no {
+  flex-shrink: 0;
+  margin: 0;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 24px;
+  font-style: italic;
+  line-height: 1.34;
+  color: #28282c;
+  white-space: nowrap;
+}
+
+.sk-cell__no-hash {
+  font-weight: 500;
+}
+
+.sk-cell__no-num {
+  font-weight: 700;
+}
+
+/* ===== 选中技能详情面板 ===== */
+.sk__detail-panel {
+  flex: 1;
+}
+
+/* ===== 技能悬浮提示 ===== */
+.sk-tip {
+  max-width: 300px;
+}
+
+.sk-tip__head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.sk-tip__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.sk-tip__family {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.sk-tip__intro {
+  font-size: 12px;
+  color: #d1d5db;
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+
+.sk-tip__values {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 2px 10px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.sk-tip__value {
+  font-size: 11px;
+  color: #eab308;
+  white-space: nowrap;
+}
+
+.sk-detail {
+  background: #131316;
+  border: 1px solid #28282c;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sk-detail__empty {
+  background: #131316;
+  border: 1px solid #28282c;
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sk-detail__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sk-detail__img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid #28282c;
+  background: #060607;
+}
+
+.sk-detail__head-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.sk-detail__name {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.sk-detail__meta {
+  font-size: 12px;
+  color: #9ca3af;
+  line-height: 1.5;
+}
+
+.sk-detail__eff {
+  color: #eab308;
+}
+
+.sk-detail__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.sk-detail__label {
+  font-size: 12px;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.sk-detail__slider {
+  flex: 1;
+  margin: 8px 0;
+}
+
+.sk-detail__intro {
+  font-size: 13px;
+  color: #d1d5db;
+  line-height: 1.7;
+  background: #18181b;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+/* ===== 模组化技能词缀配置 ===== */
+.sk-detail__modular {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid #28282c;
+  padding-top: 12px;
+}
+
+.sk-detail__modular-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.sk-detail__modular-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  padding: 8px 10px;
+  background: #18181b;
+  border: 1px solid #28282c;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #e5e7eb;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.sk-detail__modular-item:hover:not(:disabled) {
+  border-color: #3c3c3f;
+  background: #1f1f22;
+}
+
+.sk-detail__modular-item--active {
+  border-color: #06b6d4;
+  background: rgba(6, 182, 212, 0.12);
+}
+
+.sk-detail__modular-item--full:not(.sk-detail__modular-item--active) {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sk-detail__modular-name {
+  font-size: 12px;
+  color: inherit;
+}
+
+.sk-detail__modular-desc {
+  font-size: 11px;
+  color: #9ca3af;
+  line-height: 1.5;
+}
+
+.sk-detail__supports {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid #28282c;
+  padding-top: 12px;
+}
+
+.sk-detail__sub-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.sk-detail__support {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.sk-detail__support-img {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid #28282c;
+  background: #060607;
+}
+
+.sk-detail__support-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sk-detail__support-name {
+  font-size: 13px;
+  color: #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sk-detail__support-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6b7280;
+  flex-shrink: 0;
+}
+
+.sk-detail__support-family {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+// 辅助技能匹配状态点：绿=生效，红=不匹配
+.sk-detail__support-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  cursor: help;
+}
+
+.sk-detail__support-status--ok {
+  background: #22c55e;
+}
+
+.sk-detail__support-status--bad {
+  background: #ef4444;
+}
+
+/* ===== 技能选择弹窗 ===== */
+.sk-picker__search {
+  margin-bottom: 12px;
+}
+
+.sk-picker__list {
+  max-height: 60vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-right: 4px;
+}
+
+.sk-picker__none {
+  padding: 32px 0;
+  text-align: center;
+  color: #9ca3af;
+}
+
+.sk-picker__group-title {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sk-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 8px;
+}
+
+.sk-picker__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  background: #18181b;
+  border: 1px solid #28282c;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #e5e7eb;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.sk-picker__item:hover {
+  border-color: #3c3c3f;
+  background: #1f1f22;
+}
+
+.sk-picker__item-img {
+  width: 44px;
+  height: 44px;
+  display: block;
+}
+
+.sk-picker__item-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.sk-picker__item-name {
+  font-size: 12px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}

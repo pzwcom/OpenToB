@@ -1,0 +1,9 @@
+{
+"Helmet":["STR_Helmet","DEX_Helmet","INT_Helmet"],
+"Chest_Armor":["STR_Chest_Armor","DEX_Chest_Armor","INT_Chest_Armor"],
+"Gloves":["STR_Gloves","DEX_Gloves","INT_Gloves"],
+"Boots":["STR_Boots","DEX_Boots","INT_Boots"],
+"One-handed":["Dagger","One-Handed_Sword","One-Handed_Hammer","One-Handed_Axe","Wand","Rod","Scepter","Cane","Pistol","STR_Shield","DEX_Shield","INT_Shield"],
+"Two-handed":["Two-Handed_Sword","Two-Handed_Hammer","Two-Handed_Axe","Tin_Staff","Cudgel","Bow","Crossbow","Musket","Fire_Cannon"],
+"Trinket":["Necklace","Ring","Belt","Spirit_Ring"]
+}

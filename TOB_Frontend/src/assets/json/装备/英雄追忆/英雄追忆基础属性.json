@@ -1,0 +1,98 @@
+{
+  "本源的追忆": [
+    {
+      "Tier": "1",
+      "Modifier": "+90力量",
+      "Level": "0",
+      "Weight": "0"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+90敏捷",
+      "Level": "0",
+      "Weight": "0"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+90智慧",
+      "Level": "0",
+      "Weight": "0"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+90%伤害",
+      "Level": "0",
+      "Weight": "0"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+90%召唤物伤害",
+      "Level": "0",
+      "Weight": "0"
+    }
+  ],
+  "守己的追忆": [
+    {
+      "Tier": "1",
+      "Modifier": "+330最大生命",
+      "Level": "0",
+      "Weight": "0"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+180最大魔力",
+      "Level": "0",
+      "Weight": "0"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+4320护甲值",
+      "Level": "0",
+      "Weight": "0"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+4320闪避值",
+      "Level": "0",
+      "Weight": "0"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+525最大护盾",
+      "Level": "0",
+      "Weight": "0"
+    }
+  ],
+  "奋进的追忆": [
+    {
+      "Tier": "1",
+      "Modifier": "+36%攻击速度",
+      "Level": "0",
+      "Weight": "0"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+36%施法速度",
+      "Level": "0",
+      "Weight": "0"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+30%移动速度",
+      "Level": "0",
+      "Weight": "0"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+36%召唤物攻击速度",
+      "Level": "0",
+      "Weight": "0"
+    },
+    {
+      "Tier": "1",
+      "Modifier": "+36%召唤物施法速度",
+      "Level": "0",
+      "Weight": "0"
+    }
+  ]
+}

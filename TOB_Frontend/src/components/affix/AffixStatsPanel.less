@@ -1,0 +1,145 @@
+.affix__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: rgba(24, 24, 27, 0.5);
+  border: 1px solid rgba(63, 63, 70, 0.5);
+  border-radius: 12px;
+}
+
+.affix__panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+
+  &:hover .affix__panel-title {
+    color: var(--text-100);
+  }
+}
+
+.affix__panel-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-200);
+  transition: color 0.15s;
+}
+
+.affix__panel-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.affix__panel-count {
+  font-size: 12px;
+  color: var(--text-500);
+}
+
+.affix__chevron {
+  width: 14px;
+  height: 14px;
+  color: var(--text-500);
+  transition: transform 0.15s;
+
+  &--open {
+    transform: rotate(180deg);
+  }
+}
+
+.affix__empty {
+  padding: 32px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-600);
+  border: 1px dashed rgba(63, 63, 70, 0.5);
+  border-radius: 10px;
+}
+
+.affix__group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(63, 63, 70, 0.35);
+}
+
+.affix__group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+
+  &:hover .affix__group-title {
+    color: var(--amber-300);
+  }
+}
+
+.affix__group-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--amber-400);
+  transition: color 0.15s;
+}
+
+.affix__group-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.affix__group-count {
+  font-size: 11px;
+  color: var(--text-500);
+}
+
+.affix__group-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.affix__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(63, 63, 70, 0.3);
+  border-radius: 8px;
+}
+
+.affix__row-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text-300);
+  word-break: break-all;
+}
+
+.affix__row-count {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-500);
+}
+
+.affix__row-total {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-100);
+
+  &--more {
+    color: var(--red-400);
+  }
+}

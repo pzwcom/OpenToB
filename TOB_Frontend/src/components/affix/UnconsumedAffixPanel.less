@@ -1,0 +1,154 @@
+.unconsumed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: rgba(24, 24, 27, 0.5);
+  border: 1px solid rgba(63, 63, 70, 0.5);
+  border-radius: 12px;
+
+  &--empty {
+    border-style: dashed;
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+
+    &:hover .unconsumed__title {
+      color: var(--text-100);
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-200);
+    transition: color 0.15s;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__count {
+    font-size: 12px;
+    color: var(--text-500);
+
+    &--warn {
+      color: var(--amber-400);
+      font-weight: 600;
+    }
+  }
+
+  &__chevron {
+    width: 14px;
+    height: 14px;
+    color: var(--text-500);
+    transition: transform 0.15s;
+
+    &--open {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__desc {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-600);
+    line-height: 1.6;
+  }
+
+  &__empty {
+    padding: 24px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-500);
+  }
+
+  &__group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(63, 63, 70, 0.35);
+  }
+
+  &__group-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+
+    &:hover .unconsumed__group-title {
+      color: var(--amber-300);
+    }
+  }
+
+  &__group-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--amber-400);
+    transition: color 0.15s;
+  }
+
+  &__group-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__group-count {
+    font-size: 11px;
+    color: var(--text-500);
+  }
+
+  &__group-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(63, 63, 70, 0.3);
+    border-radius: 8px;
+  }
+
+  &__row-text {
+    flex: 1;
+    min-width: 0;
+    font-size: 12px;
+    color: var(--text-300);
+    word-break: break-all;
+  }
+
+  &__row-count {
+    flex-shrink: 0;
+    font-size: 11px;
+    color: var(--text-500);
+  }
+}

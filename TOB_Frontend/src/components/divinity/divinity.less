@@ -1,0 +1,850 @@
+.divinity {
+  padding: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-100);
+  }
+
+  &__body {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  &__grid-wrap {
+    flex-shrink: 0;
+    background: rgba(24, 24, 27, 0.5);
+    border: 1px solid rgba(63, 63, 70, 0.5);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  &__grid-stats {
+    margin-top: 16px;
+  }
+
+  &__side {
+    flex: 1;
+    min-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 12px;
+    font-size: 10px;
+    color: var(--text-500);
+
+    &-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      margin-right: 4px;
+    }
+
+    &-item {
+      display: flex;
+      align-items: center;
+    }
+  }
+}
+
+.divinity-panel {
+  background: rgba(39, 39, 42, 0.5);
+  border: 1px solid rgba(63, 63, 70, 0.5);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-100);
+
+    &--row {
+      margin: 0;
+    }
+
+    &--amber {
+      color: var(--amber-400);
+    }
+  }
+}
+
+.divinity-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  color: var(--text-500);
+}
+
+.divinity-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.divinity-chip {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  border: 1px solid var(--bg-700);
+  color: var(--text-400);
+  background: none;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: var(--bg-600);
+  }
+
+  &--active {
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+  }
+
+  &--active-alt {
+    border-color: rgba(255, 255, 255, 0.4);
+    background: var(--bg-600);
+    color: var(--text-100);
+  }
+}
+
+.divinity-shape-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.divinity-tool-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 8px;
+}
+
+.divinity-tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  font-size: 12px;
+  border: 1px solid var(--bg-700);
+  color: var(--text-400);
+  background: none;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--bg-600);
+    color: var(--text-100);
+  }
+
+  &--on {
+    background: var(--bg-600);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+.divinity-preview-box {
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(9, 9, 11, 0.5);
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.divinity-preview {
+  display: inline-grid;
+  gap: 1px;
+
+  &__cell {
+    border-radius: 2px;
+    background: transparent;
+
+    &--stone { background: #78716c; }
+    &--emerald { background: #059669; }
+    &--blue { background: #2563eb; }
+    &--red { background: #dc2626; }
+    &--purple { background: #9333ea; }
+    &--cyan { background: #0891b2; }
+    &--legendary { background: #ea580c; }
+    &--nether { background: #1e3a8a; }
+  }
+}
+
+.divinity-affix-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.divinity-affix-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.divinity-affix-idx {
+  width: 16px;
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--text-600);
+}
+
+.divinity-affix-text {
+  flex: 1;
+  font-size: 11px;
+  color: var(--text-100);
+}
+
+.divinity-affix-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--text-500);
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--red-400);
+  }
+}
+
+.divinity-select {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 12px;
+  background: var(--bg-700);
+  border: 1px solid var(--bg-600);
+  border-radius: 4px;
+  color: var(--text-100);
+  outline: none;
+
+  &.ant-select {
+    padding: 0;
+
+    .ant-select-selector {
+      background: var(--bg-700) !important;
+      border-color: var(--bg-600) !important;
+    }
+
+    .ant-select-selection-item,
+    .ant-select-placeholder {
+      font-size: 12px;
+      color: var(--text-100);
+    }
+  }
+
+  &:focus {
+    border-color: var(--amber-500);
+  }
+
+  &--flex3 {
+    flex: 3;
+  }
+
+  &--full {
+    width: 100%;
+    flex: none;
+  }
+}
+
+.divinity-panel__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.divinity-btn-full {
+  width: 100%;
+}
+
+.divinity-template-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.divinity-template-btn {
+  width: 100%;
+  text-align: left;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  border: 1px solid var(--bg-700);
+  color: var(--text-400);
+  background: none;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: var(--bg-600);
+  }
+
+  &--active {
+    border-color: rgba(245, 158, 11, 0.6);
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--amber-300, #fcd34d);
+  }
+
+  &__name {
+    font-weight: 500;
+  }
+
+  &__shape {
+    color: var(--text-500);
+    margin-left: 4px;
+  }
+}
+
+.divinity-special-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.divinity-special-item {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(245, 158, 11, 0.1);
+  background: rgba(245, 158, 11, 0.05);
+  font-size: 10px;
+  color: rgba(252, 211, 77, 0.8);
+
+  &--nether {
+    border-color: rgba(30, 58, 138, 0.35);
+    background: rgba(30, 58, 138, 0.12);
+    color: rgba(147, 197, 253, 0.9);
+  }
+}
+
+.divinity-affix-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__label {
+    font-size: 9px;
+    color: var(--text-500);
+  }
+}
+
+.divinity-affix-opt-source {
+  opacity: 0.7;
+}
+
+.divinity-affix-opt-core {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1.3;
+
+  &__name {
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  &__desc {
+    font-size: 11px;
+    color: var(--text-400);
+    white-space: normal;
+    word-break: break-all;
+  }
+}
+
+.divinity-link {
+  font-size: 10px;
+  color: var(--text-500);
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text-300);
+  }
+}
+
+.divinity-nether-type__img {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  object-fit: cover;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.divinity-legend-type__img {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  object-fit: cover;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.divinity-nether-select {
+  width: 100%;
+
+  &.ant-select {
+    font-size: 12px;
+  }
+
+  .ant-select-selector {
+    background: var(--bg-700) !important;
+    border-color: var(--bg-600) !important;
+  }
+
+  .ant-select-selection-item,
+  .ant-select-placeholder {
+    font-size: 12px;
+    color: var(--text-100);
+  }
+}
+
+.divinity-inventory {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 2px;
+
+  &__empty {
+    padding: 16px 0;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-500);
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--bg-700);
+    cursor: pointer;
+    transition: all 0.15s;
+
+    &:hover {
+      border-color: var(--bg-600);
+    }
+
+    &--selected {
+      border-color: rgba(245, 158, 11, 0.4);
+      background: rgba(245, 158, 11, 0.05);
+    }
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-100);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__shape {
+    margin: 0;
+    font-size: 10px;
+    color: var(--text-500);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  &__place-btn {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--amber-400);
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(245, 158, 11, 0.4);
+    }
+  }
+
+  &__icon-btn {
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 10px;
+    color: var(--text-400);
+    background: none;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--text-100);
+      background: var(--bg-600);
+    }
+
+    &--danger:hover {
+      color: var(--red-400);
+      background: rgba(220, 38, 38, 0.1);
+    }
+  }
+
+  &__placed {
+    flex-shrink: 0;
+    font-size: 9px;
+    color: rgba(245, 158, 11, 0.7);
+  }
+}
+
+.divinity-inventory__item:hover .divinity-inventory__actions {
+  opacity: 1;
+}
+
+.divinity-grid {
+  position: relative;
+
+  &__warning {
+    position: absolute;
+    top: -28px;
+    left: 8px;
+    z-index: 20;
+
+    &-text {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      color: var(--red-400);
+      background: rgba(220, 38, 38, 0.1);
+      border: 1px solid rgba(220, 38, 38, 0.2);
+    }
+  }
+
+  &__container {
+    position: relative;
+  }
+
+  &__cells {
+    display: grid;
+    gap: 1px;
+  }
+
+  &__cell {
+    position: relative;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    user-select: none;
+    transition: filter 0.15s;
+
+    // 背景格（空白）不可 hover、不可交互；仅石板格可悬浮/点击
+    &--slate {
+      cursor: pointer;
+    }
+
+    &--bg {
+      background: var(--bg-800);
+      border-color: rgba(63, 63, 70, 0.4);
+    }
+
+    &--overlap {
+      background: rgba(127, 29, 29, 0.6);
+    }
+
+    &--void {
+      background: rgba(9, 9, 11, 0.55);
+    }
+
+    &--boosted {
+      box-shadow: inset 0 0 0 2px rgba(245, 158, 11, 0.7);
+      border-color: rgba(245, 158, 11, 0.6);
+    }
+
+    &--projected {
+      box-shadow: inset 0 0 0 2px rgba(56, 189, 248, 0.7);
+      border-color: rgba(56, 189, 248, 0.6);
+    }
+
+    &-void {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: rgba(9, 9, 11, 0.55);
+    }
+
+    &-tip {
+      max-width: 260px;
+
+      &-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-100);
+        margin-bottom: 4px;
+      }
+
+      &-affix {
+        display: flex;
+        gap: 6px;
+        align-items: flex-start;
+        margin-bottom: 2px;
+      }
+
+      &-type {
+        font-size: 10px;
+        color: var(--amber-400);
+        flex-shrink: 0;
+      }
+
+      &-text {
+        font-size: 11px;
+        color: var(--text-100);
+        line-height: 1.4;
+        white-space: normal;
+        word-break: break-all;
+      }
+
+      &-note {
+        font-size: 10px;
+        color: rgba(245, 158, 11, 0.9);
+        margin-top: 2px;
+      }
+    }
+  }
+
+  // 石板包围盒内的背景格（形状空洞），纯装饰、不可 hover / 不可交互
+  &__cell-hole {
+    box-sizing: border-box;
+    border: 1px solid rgba(63, 63, 70, 0.4);
+    background: var(--bg-800);
+
+    &--void {
+      background: rgba(9, 9, 11, 0.55);
+      border-color: transparent;
+    }
+  }
+
+  // 整块石板作为 hover 目标：悬浮时整块石板一起高亮
+  &__slate {
+    &:hover .divinity-grid__cell--slate {
+      filter: brightness(1.25);
+    }
+  }
+
+  &__preview {
+    position: absolute;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  &__preview-cell {
+    position: absolute;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+  }
+
+  &__preview-invalid {
+    position: absolute;
+    inset: 0;
+    background: rgba(239, 68, 68, 0.4);
+  }
+
+  &__float {
+    position: fixed;
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  &__float-cell {
+    position: absolute;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 2px;
+  }
+}
+
+.divinity-toolbar {
+  position: fixed;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--bg-600);
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  background: #27272a;
+  transform: translate(-50%, -100%);
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    font-size: 14px;
+    color: var(--text-400);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+
+    &:hover {
+      color: var(--text-100);
+      background: var(--bg-700);
+    }
+
+    &--danger {
+      color: var(--red-400);
+
+      &:hover {
+        color: var(--red-300, #fca5a5);
+        background: rgba(239, 68, 68, 0.1);
+      }
+    }
+  }
+
+  &__divider {
+    width: 1px;
+    height: 20px;
+    background: var(--bg-600);
+    margin: 0 4px;
+  }
+
+  &__label {
+    padding: 0 4px;
+    font-size: 10px;
+    color: var(--text-500);
+  }
+}
+
+.divinity-selected {
+  background: rgba(39, 39, 42, 0.5);
+  border: 1px solid rgba(63, 63, 70, 0.5);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__name {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-100);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__shape {
+    flex-shrink: 0;
+    font-size: 10px;
+    color: var(--text-500);
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  &__transform {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  &__transform-label {
+    font-size: 10px;
+    color: var(--text-500);
+    margin-right: 4px;
+  }
+}
+
+.divinity-import-textarea {
+  width: 100%;
+  height: 160px;
+  padding: 12px;
+  font-size: 12px;
+  font-family: monospace;
+  background: var(--bg-700);
+  border: 1px solid var(--bg-600);
+  border-radius: 8px;
+  color: var(--text-100);
+  resize: none;
+  outline: none;
+
+  &:focus {
+    border-color: var(--amber-500);
+  }
+}
+
+.divinity-import-error {
+  margin: 0;
+  font-size: 10px;
+  color: var(--red-400);
+}
+
+.divinity-import-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

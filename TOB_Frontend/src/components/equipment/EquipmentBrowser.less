@@ -1,0 +1,290 @@
+.equipb {
+  width: 100%;
+  min-width: 0;
+
+  // ===== 顶部 传奇/普通 切换 =====
+
+  &__tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  &__tab {
+    flex: 1;
+    min-height: 30px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    background: #161719;
+    color: #757575;
+    font-size: 14px;
+    cursor: pointer;
+
+    &:hover {
+      color: #e2e2e2;
+    }
+
+    &.is-active {
+      border-color: rgba(255, 198, 67, 0.6);
+      background: rgba(255, 198, 67, 0.12);
+      color: #ffc043;
+    }
+  }
+
+  &__pane {
+    display: grid;
+    grid-template-columns: 1fr;
+    border: 1px solid #333;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #161719;
+
+    @media (min-width: 421px) {
+      grid-template-columns: 192px minmax(0, 1fr);
+    }
+  }
+
+  // ===== 左侧分类树 =====
+
+  &__tree {
+    min-height: 0;
+    max-height: 380px;
+    overflow-y: auto;
+    border-bottom: 1px solid #333;
+    background: #161719;
+    padding: 6px 0;
+    scrollbar-width: none;
+
+    @media (min-width: 421px) {
+      border-bottom: 0;
+      border-right: 1px solid #333;
+    }
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__node,
+  &__group,
+  &__sub {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    color: #757575;
+    white-space: nowrap;
+    overflow: hidden;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: #e2e2e2;
+    }
+  }
+
+  &__node {
+    min-height: 34px;
+    padding-left: 8px;
+    font-size: 16px;
+
+    &.is-active {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+  }
+
+  &__group {
+    min-height: 38px;
+    padding-left: 8px;
+    font-size: 16px;
+    font-weight: 500;
+
+    &.is-active {
+      color: #e2e2e2;
+    }
+  }
+
+  &__group-arrow {
+    margin-right: 4px;
+    font-size: 12px;
+    transition: transform 0.15s;
+    color: #757575;
+
+    &.is-open {
+      transform: rotate(90deg);
+    }
+  }
+
+  &__group-text,
+  &__node-text,
+  &__sub-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__sub {
+    position: relative;
+    min-height: 36px;
+    padding-left: 28px;
+    font-size: 16px;
+
+    &.is-active {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+  }
+
+  &__sub-guide {
+    position: absolute;
+    left: 12px;
+    top: 0;
+    bottom: 0;
+    border-left: 1px dashed #333;
+    pointer-events: none;
+  }
+
+  &__sub::after {
+    content: '';
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    width: 16px;
+    border-top: 1px dashed #333;
+    transform: translateY(-1px);
+    pointer-events: none;
+  }
+
+  // ===== 右侧搜索 + 列表 =====
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: 380px;
+    background: #161719;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  &__search {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  &__search-input {
+    width: 100%;
+    height: 24px;
+    padding: 0 22px 0 8px;
+    border: 1px solid #333;
+    border-radius: 2px;
+    background: #000;
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+
+    &::placeholder {
+      color: #757575;
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  &__search-icon {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    color: #757575;
+    pointer-events: none;
+  }
+
+  &__items {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-right: 4px;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__empty {
+    padding: 24px;
+    text-align: center;
+    font-size: 13px;
+    color: #757575;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 2px;
+    border: 0;
+    border-radius: 2px;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+
+  &__item-frame {
+    position: relative;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    overflow: hidden;
+    border-bottom: 3px solid #ff861c;
+    background: linear-gradient(180deg, #2d1a0b, #af622f);
+
+    &--normal {
+      border-bottom-color: #8a8f98;
+      background: linear-gradient(180deg, #1b1d20, #4d5258);
+    }
+
+    &--graft {
+      border-bottom-color: #a78bfa;
+      background: linear-gradient(180deg, #241a3a, #6d5bb5);
+    }
+  }
+
+  &__item-img {
+    position: absolute;
+    inset: 0;
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+  }
+
+  &__item-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 16px;
+    color: #ffc043;
+  }
+
+  &__item-level {
+    flex-shrink: 0;
+    font-size: 14px;
+    color: #ffc043;
+    opacity: 0.8;
+  }
+}
