@@ -9,7 +9,9 @@ import BaseButton from '../components/ui/BaseButton.jsx'
 import prismKindData from '../assets/json/装备/棱镜/棱镜图片及种类.json'
 import prismRandomData from '../assets/json/装备/棱镜/随机词缀.json'
 import { aggregateAffixTexts } from '../utils/affixAggregation.js'
+import { normalizeStates } from '../utils/combatStates.js'
 import { cleanAffixText } from '../utils/affixText.js'
+import { AFFIX_CONSUMERS } from '../utils/affixConsumers.js'
 import {
   buildSlotContext,
   getPrismAffixKind,
@@ -523,13 +525,17 @@ function TalentsPage() {
       pushAffix(node.desc || node.name, value)
     }
 
-    return aggregateAffixTexts(texts)
+    return aggregateAffixTexts(texts, normalizeStates(buildStore.build && buildStore.build.configuration))
   })()
 
   const affixTotalCount =
     affixStats.increase.reduce((s, g) => s + g.count, 0) +
     affixStats.more.reduce((s, g) => s + g.count, 0) +
     affixStats.flat.reduce((s, g) => s + g.count, 0) +
+    AFFIX_CONSUMERS.reduce(
+      (s, c) => s + (affixStats[c.key] || []).reduce((x, g) => x + g.count, 0),
+      0
+    ) +
     affixStats.others.reduce((s, g) => s + g.count, 0)
 
   const renderNode = (node) => {
@@ -1235,6 +1241,27 @@ function TalentsPage() {
                       ))}
                     </div>
                   )}
+                  {AFFIX_CONSUMERS.map((c) => {
+                    const items = affixStats[c.key] || []
+                    if (items.length === 0) return null
+                    return (
+                      <div key={c.key} className="talents__affix-group">
+                        <div className="talents__affix-group-title">
+                          {formatMessage({ id: c.label })}
+                        </div>
+                        {items.map((g) => (
+                          <div key={g.text} className="talents__affix-row">
+                            <span className="talents__affix-text">
+                              {cleanAffixText(g.text)}
+                            </span>
+                            <span className="talents__affix-count">
+                              {formatMessage({ id: 'affixStats.times' }, { count: g.count })}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  })}
                   {affixStats.others.length > 0 && (
                     <div className="talents__affix-group">
                       <div className="talents__affix-group-title">

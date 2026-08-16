@@ -20,9 +20,9 @@ export const combatStates = {
   enemyWither: { category: 'enemyDebuff', kind: 'number', default: 0, min: 0, max: 10, label: 'state.enemyWither' },
   enemyWorsen: { category: 'enemyDebuff', kind: 'number', default: 0, min: 0, max: 10, label: 'state.enemyWorsen' },
   enemyPoison: { category: 'enemyDebuff', kind: 'number', default: 0, min: 0, max: 10, label: 'state.enemyPoison' },
-  blessAgile: { category: 'selfBuff', kind: 'number', default: 0, min: 0, max: 10, label: 'state.blessAgile' },
-  blessTough: { category: 'selfBuff', kind: 'number', default: 0, min: 0, max: 10, label: 'state.blessTough' },
-  blessFocus: { category: 'selfBuff', kind: 'number', default: 0, min: 0, max: 10, label: 'state.blessFocus' },
+  blessAgile: { category: 'selfBuff', kind: 'number', default: 1, min: 0, max: 99, switchMax: true, label: 'state.blessAgile' },
+  blessTough: { category: 'selfBuff', kind: 'number', default: 1, min: 0, max: 99, switchMax: true, label: 'state.blessTough' },
+  blessFocus: { category: 'selfBuff', kind: 'number', default: 1, min: 0, max: 99, switchMax: true, label: 'state.blessFocus' },
   recentlyKilled: { category: 'environment', kind: 'toggle', default: false, label: 'state.recentlyKilled' },
   enemyArmorReduced: { category: 'enemyDebuff', kind: 'toggle', default: false, label: 'state.enemyArmorReduced' },
   enemyCount: { category: 'environment', kind: 'number', default: 1, min: 1, max: 10, label: 'state.enemyCount' },
@@ -67,4 +67,16 @@ export function evaluateCondition(condition, states) {
 
 export function blessingStacks(states) {
   return (states?.blessAgile || 0) + (states?.blessTough || 0) + (states?.blessFocus || 0)
+}
+
+// 祝福开关：存 0（无）/ 正数（有），按当前 BD 的满层数值动态换算实际层数。
+// caps 由 computeBlessingCaps(build) 计算（基础 4 + 各模块上限词缀）。
+export function applyBlessingCaps(raw, caps) {
+  const states = normalizeStates(raw)
+  return {
+    ...states,
+    blessAgile: states.blessAgile > 0 ? caps.agile : 0,
+    blessTough: states.blessTough > 0 ? caps.tough : 0,
+    blessFocus: states.blessFocus > 0 ? caps.focus : 0,
+  }
 }

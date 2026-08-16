@@ -231,10 +231,9 @@ for (const [sub, affixes] of Object.entries(normalBaseData || {})) {
     const search = []
     const lines = []
     pushSearch(search, sub, a.Entry, '基础词缀')
-    pushLine(lines, `[${sub}] 基础词缀`, '')
     pushLine(lines, a.Entry, a.Tier)
     entries.push(
-      makeEntry(CATEGORY_KEY.equip, '词缀库-普通', a.Entry, '', search, lines)
+      makeEntry(CATEGORY_KEY.equip, '词缀库-普通', `基础词缀 · ${sub}`, '', search, lines)
     )
   }
 }
@@ -245,20 +244,18 @@ for (const [sub, { 前缀 = [], 后缀 = [] }] of Object.entries(
     const search = []
     const lines = []
     pushSearch(search, sub, a.Entry, a.Library, '打造-前缀')
-    pushLine(lines, `[${sub}] 打造前缀（${a.Library || ''}）`, '')
     pushLine(lines, a.Entry, a.Tier)
     entries.push(
-      makeEntry(CATEGORY_KEY.equip, '词缀库-普通', a.Entry, '', search, lines)
+      makeEntry(CATEGORY_KEY.equip, '词缀库-普通', `打造前缀 · ${sub}`, '', search, lines)
     )
   }
   for (const a of 后缀) {
     const search = []
     const lines = []
     pushSearch(search, sub, a.Entry, a.Library, '打造-后缀')
-    pushLine(lines, `[${sub}] 打造后缀（${a.Library || ''}）`, '')
     pushLine(lines, a.Entry, a.Tier)
     entries.push(
-      makeEntry(CATEGORY_KEY.equip, '词缀库-普通', a.Entry, '', search, lines)
+      makeEntry(CATEGORY_KEY.equip, '词缀库-普通', `打造后缀 · ${sub}`, '', search, lines)
     )
   }
 }
@@ -269,10 +266,9 @@ for (const [slot, affixes] of Object.entries(graftBaseData || {})) {
     const search = []
     const lines = []
     pushSearch(search, slot, a.Entry, '基础词缀')
-    pushLine(lines, `[${slot}] 基础词缀`, '')
     pushLine(lines, a.Entry, a.Tier)
     entries.push(
-      makeEntry(CATEGORY_KEY.equip, '词缀库-渴瘾', a.Entry, '', search, lines)
+      makeEntry(CATEGORY_KEY.equip, '词缀库-渴瘾', `基础词缀 · ${slot}`, '', search, lines)
     )
   }
 }
@@ -283,20 +279,18 @@ for (const [slot, { 前缀 = [], 后缀 = [] }] of Object.entries(
     const search = []
     const lines = []
     pushSearch(search, slot, a.Entry, a.Library, '打造-前缀')
-    pushLine(lines, `[${slot}] 打造前缀（${a.Library || ''}）`, '')
     pushLine(lines, a.Entry, a.Tier)
     entries.push(
-      makeEntry(CATEGORY_KEY.equip, '词缀库-渴瘾', a.Entry, '', search, lines)
+      makeEntry(CATEGORY_KEY.equip, '词缀库-渴瘾', `打造前缀 · ${slot}`, '', search, lines)
     )
   }
   for (const a of 后缀) {
     const search = []
     const lines = []
     pushSearch(search, slot, a.Entry, a.Library, '打造-后缀')
-    pushLine(lines, `[${slot}] 打造后缀（${a.Library || ''}）`, '')
     pushLine(lines, a.Entry, a.Tier)
     entries.push(
-      makeEntry(CATEGORY_KEY.equip, '词缀库-渴瘾', a.Entry, '', search, lines)
+      makeEntry(CATEGORY_KEY.equip, '词缀库-渴瘾', `打造后缀 · ${slot}`, '', search, lines)
     )
   }
 }
@@ -306,21 +300,19 @@ for (const a of reviveData || []) {
   const search = []
   const lines = []
   pushSearch(search, a.Entry, '追忆复苏')
-  pushLine(lines, '追忆复苏词缀', '')
   pushLine(lines, a.Entry, a.Tier)
   entries.push(
-    makeEntry(CATEGORY_KEY.equip, '词缀库-追忆', a.Entry, '', search, lines)
+    makeEntry(CATEGORY_KEY.equip, '词缀库-追忆', '复苏词缀', '', search, lines)
   )
 }
 for (const a of reviveMoonData || []) {
   const search = []
   const lines = []
   pushSearch(search, a.Entry, a.EntryDesc, '月相')
-  pushLine(lines, '复苏词缀（月相）', '')
   pushLine(lines, a.Entry, a.Tier)
   pushLine(lines, a.EntryDesc, '')
   entries.push(
-    makeEntry(CATEGORY_KEY.equip, '词缀库-追忆', a.Entry, '', search, lines)
+    makeEntry(CATEGORY_KEY.equip, '词缀库-追忆', '复苏词缀（月相）', '', search, lines)
   )
 }
 
@@ -330,10 +322,9 @@ for (const [cat, affixes] of Object.entries(towerSeqData || {})) {
     const search = []
     const lines = []
     pushSearch(search, cat, text, series)
-    pushLine(lines, `[${cat}] ${series}`, '')
     pushLine(lines, text, '')
     entries.push(
-      makeEntry(CATEGORY_KEY.equip, '高塔序列', text, '', search, lines)
+      makeEntry(CATEGORY_KEY.equip, '高塔序列', `${series} · ${cat}`, '', search, lines)
     )
   }
 }
@@ -390,7 +381,7 @@ for (const text of prismBaseData || []) {
   const lines = []
   pushSearch(search, text, '基础词缀')
   pushLine(lines, text, '')
-  entries.push(makeEntry(CATEGORY_KEY.prism, '棱镜', text, '', search, lines))
+  entries.push(makeEntry(CATEGORY_KEY.prism, '棱镜', '基础词缀', '', search, lines))
 }
 const prismRandomSeen = new Set()
 for (const a of prismRandomData || []) {
@@ -402,7 +393,7 @@ for (const a of prismRandomData || []) {
   if (a.category) pushLine(lines, `[${a.category}]`, '')
   pushLine(lines, a.entry, a.rarety ? a.rarety : '')
   entries.push(
-    makeEntry(CATEGORY_KEY.prism, '棱镜', a.entry, '', search, lines)
+    makeEntry(CATEGORY_KEY.prism, '棱镜', `随机词缀${a.category ? ` · ${a.category}` : ''}`, '', search, lines)
   )
 }
 
@@ -424,7 +415,9 @@ for (const [type, affixes] of Object.entries(perfumeData || {})) {
       const lines = []
       pushSearch(search, text, type)
       pushLine(lines, text, '')
-      entries.push(makeEntry(CATEGORY_KEY.talent, '调香', text, '', search, lines))
+      entries.push(
+        makeEntry(CATEGORY_KEY.talent, '调香', `调香 · ${type}`, '', search, lines)
+      )
     }
   }
 }
@@ -471,7 +464,9 @@ for (const { name, affix, kind, locs, image } of talentNodeMap.values()) {
   pushSearch(search, name, affix, kind)
   pushLine(lines, `[${locText}] ${kind}`, '')
   pushLine(lines, affix, '')
-  entries.push(makeEntry(CATEGORY_KEY.talent, '天赋节点', name, image, search, lines))
+  entries.push(
+    makeEntry(CATEGORY_KEY.talent, '天赋节点', kind ? `${kind}天赋` : name, image, search, lines)
+  )
 }
 
 // ---------- 神格石板天赋（非传奇 + 传奇天赋词缀） ----------
@@ -510,7 +505,7 @@ for (const { type, source, affix, hint, locs } of slateTalentMap.values()) {
   const search = []
   const lines = []
   const generic = GENERIC_SLATE_TYPES.has(type)
-  const name = generic ? affix : type
+  const name = generic ? type : type
   const kind = generic ? type : ''
   const hints = Object.values(hint)
   pushSearch(search, name, type, source, affix)
@@ -541,7 +536,7 @@ for (const [cat, points] of Object.entries(netherPointData || {})) {
     pushLine(lines, `[${cat}]`, '')
     pushLine(lines, p.词缀, '')
     entries.push(
-      makeEntry(CATEGORY_KEY.talent, '冥王天赋', p.词缀, '', search, lines, {
+      makeEntry(CATEGORY_KEY.talent, '冥王天赋', p.名称 || cat, '', search, lines, {
         hints,
       })
     )
@@ -734,7 +729,7 @@ for (const [cat, statuses] of Object.entries(statusData || {})) {
     pushLine(lines, `[${cat}]`, '')
     pushLine(lines, item.名称, '')
     entries.push(
-      makeEntry(CATEGORY_KEY.status, '状态', name, '', search, lines, { hints })
+      makeEntry(CATEGORY_KEY.status, '状态', `状态 · ${cat}`, '', search, lines, { hints })
     )
   }
 }

@@ -1,23 +1,7 @@
-.config {
-  padding: 16px;
-  max-width: 1400px;
-  margin: 0 auto;
+.combat-state {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-
-  &__header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-  }
-
-  &__title {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text-100);
-  }
+  gap: 12px;
 
   &__hint {
     font-size: 12px;
@@ -68,6 +52,12 @@
     min-width: 0;
     font-size: 13px;
     color: var(--text-300);
+  }
+
+  &__row-hint {
+    margin-left: 6px;
+    font-size: 12px;
+    color: var(--text-600);
   }
 
   &__row-lock {

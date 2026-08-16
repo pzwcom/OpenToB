@@ -314,6 +314,12 @@
   color: #9ca3af;
 }
 
+.sk-tip__tags {
+  font-size: 11px;
+  color: #60a5fa;
+  margin-bottom: 6px;
+}
+
 .sk-tip__intro {
   font-size: 12px;
   color: #d1d5db;
@@ -392,6 +398,24 @@
   color: #eab308;
 }
 
+.sk-detail__bonus {
+  color: #22c55e;
+}
+
+.sk-detail__manual-bonus {
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.sk-detail__manual-bonus--pos {
+  color: #22c55e;
+}
+
+.sk-detail__manual-bonus--neg {
+  color: #f87171;
+}
+
 .sk-detail__row {
   display: flex;
   align-items: center;
@@ -417,6 +441,50 @@
   background: #18181b;
   border-radius: 6px;
   padding: 10px 12px;
+}
+
+/* ===== 魔灵技能属性 ===== */
+.sk-detail__minion {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid #28282c;
+  padding-top: 12px;
+}
+
+.sk-detail__minion-growth-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-size: 13px;
+  color: #eab308;
+}
+
+.sk-detail__minion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 6px;
+}
+
+.sk-detail__minion-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: #18181b;
+  border: 1px solid #28282c;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.sk-detail__minion-label {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.sk-detail__minion-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e5e7eb;
 }
 
 /* ===== 模组化技能词缀配置 ===== */

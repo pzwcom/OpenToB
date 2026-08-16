@@ -250,8 +250,68 @@ const LEGEND_ITEMS = Object.entries(legendEquipData).map(([name, d]) => ({
   baseAffix: d.基底词缀 || '',
   normalAffixes: Array.isArray(d.词条) ? d.词条 : [],
   corruptedAffixes: Array.isArray(d.侵蚀词条) ? d.侵蚀词条 : [],
+  pools: Array.isArray(d.随机词缀池) ? d.随机词缀池 : [],
   imgPath: d.图片地址 || '',
 }))
+
+// 解析传奇装备随机词缀池 → 按词条槽位归组。
+// 返回与 normalAffixes 等长的数组，每项为 { normal: [...], eroded: [...] } 或 null。
+// 池条目成对出现（正常 + 已侵蚀，标题同 base），按 base 分组后，正常/侵蚀候选按同一下标槽位对应。
+// 槽位规则：
+//  - base 形如 `<词缀列表N>` → 词条第 N 槽（1-based）；若该槽文本不在候选内则回退按候选文本匹配槽位；
+//  - 其余（`<随机一条XX词缀>` 等占位符）→ 按词条中同名文本出现顺序一一对应（支持多槽位同名）。
+function parseLegendPools(normalAffixes, pools) {
+  const slots = (normalAffixes || []).map(() => null)
+  if (!Array.isArray(pools)) return slots
+
+  const byTitle = new Map()
+  for (const p of pools) {
+    const title = p.标题 || ''
+    const eroded = title.endsWith('已侵蚀')
+    const base = eroded ? title.slice(0, -3) : title
+    const candidates = Array.isArray(p.候选词缀) ? p.候选词缀 : []
+    if (!byTitle.has(base)) byTitle.set(base, { normal: [], eroded: [] })
+    byTitle.get(base)[eroded ? 'eroded' : 'normal'].push(candidates)
+  }
+
+  for (const [base, group] of byTitle) {
+    const count = Math.max(group.normal.length, group.eroded.length)
+    const listMatch = base.match(/^<词缀列表(\d+)>$/)
+
+    let targetIdx = -1
+    if (listMatch) {
+      const positional = Number(listMatch[1]) - 1
+      const flatAll = [...group.normal.flat(), ...group.eroded.flat()]
+      if (
+        positional >= 0 &&
+        positional < normalAffixes.length &&
+        (flatAll.length === 0 || flatAll.includes(normalAffixes[positional]))
+      ) {
+        targetIdx = positional
+      } else if (flatAll.length) {
+        targetIdx = normalAffixes.findIndex((t) => flatAll.includes(t))
+      }
+      if (targetIdx >= 0 && targetIdx < slots.length) {
+        if (!slots[targetIdx]) slots[targetIdx] = { normal: [], eroded: [] }
+        slots[targetIdx].normal = group.normal[0] || []
+        slots[targetIdx].eroded = group.eroded[0] || []
+      }
+      continue
+    }
+
+    // 占位符文本：按出现顺序把正常/侵蚀候选逐槽位对应
+    let seen = 0
+    for (let i = 0; i < normalAffixes.length && seen < count; i++) {
+      if (normalAffixes[i] === base) {
+        if (!slots[i]) slots[i] = { normal: [], eroded: [] }
+        slots[i].normal = group.normal[seen] || []
+        slots[i].eroded = group.eroded[seen] || []
+        seen += 1
+      }
+    }
+  }
+  return slots
+}
 
 // 普通装备数据：无词条/侵蚀词条，基底词缀为「无」时视为空
 const NORMAL_ITEMS = Object.entries(normalEquipData).map(([name, d]) => ({
@@ -498,6 +558,13 @@ function EquipmentPage() {
     return opts
   }, [normalBasePool, form.baseAffix])
 
+  // 传奇装备随机词缀池 → 槽位映射（非传奇/非渴瘾时为空数组，供编辑表单 Select 与侵蚀切换使用）
+  const legendForEdit = LEGEND_ITEMS.find((l) => l.value === form.name || l.name === form.name)
+  const legendPools = useMemo(
+    () => (legendForEdit ? parseLegendPools(legendForEdit.normalAffixes, legendForEdit.pools) : []),
+    [legendForEdit]
+  )
+
   function openSlot(slotKey) {
     const item = inventoryItemOf(equipment[slotKey])
     setForm(item ? formFromItem(item) : EMPTY_FORM)
@@ -546,8 +613,18 @@ function EquipmentPage() {
           return f
         }
       }
-      const pool = willCorrupt ? f.corruptedAffixes : f.normalAffixes
-      const nextText = pool[affixIndex] || affixTextOf(target)
+      // 随机词缀池槽位：正常/侵蚀候选按索引一一对应（normal[i] ↔ eroded[i]）
+      const pool = legendPools[affixIndex]
+      let nextText
+      if (pool && (pool.normal.length > 0 || pool.eroded.length > 0)) {
+        const from = willCorrupt ? pool.normal : pool.eroded
+        const to = willCorrupt ? pool.eroded : pool.normal
+        const idx = from.indexOf(affixTextOf(target))
+        nextText = idx >= 0 && to[idx] ? to[idx] : affixTextOf(target)
+      } else {
+        const poolArr = willCorrupt ? f.corruptedAffixes : f.normalAffixes
+        nextText = poolArr[affixIndex] || affixTextOf(target)
+      }
       return {
         ...f,
         corrupted: f.affixes.some((a, i) => (i === affixIndex ? willCorrupt : a.corrupted)),
@@ -556,6 +633,16 @@ function EquipmentPage() {
         ),
       }
     })
+  }
+
+  // 传奇随机词缀池槽位：选择候选词缀（正常/侵蚀按当前侵蚀状态取对应池）
+  function selectLegendPoolAffix(affixIndex, text) {
+    setForm((f) => ({
+      ...f,
+      affixes: f.affixes.map((a, i) =>
+        i === affixIndex ? makeAffix({ text, corrupted: a.corrupted }) : a
+      ),
+    }))
   }
 
   function updateAffixValue(affixIndex, rangeIndex, v) {
@@ -1475,35 +1562,64 @@ function EquipmentPage() {
               {form.affixes.length > 0 && (
                 <div className="equip__edit-affixes">
                   <div className="equip__edit-affixes-title">{formatMessage({ id: 'equip.affixes' })}</div>
-                  {form.affixes.map((a, i) => (
-                    <div
-                      key={`${affixTextOf(a)}-${i}`}
-                      className={`equip__edit-affix ${a.corrupted ? 'equip__edit-affix--corrupted' : ''}`}
-                    >
-                      <div className="equip__edit-affix-row">
-                        <div className="equip__edit-affix-text">
-                          {cleanAffixText(affixDisplayText(a))}
-                          {a.corrupted && (
-                            <span className="equip__edit-affix-corrupted-tag">
-                              {formatMessage({ id: 'equip.corruptedTag' })}
-                            </span>
+                  {form.affixes.map((a, i) => {
+                    const pool = legendPools[i]
+                    const hasPool = pool && (pool.normal.length > 0 || pool.eroded.length > 0)
+                    const candidates = hasPool
+                      ? a.corrupted && pool.eroded.length > 0
+                        ? pool.eroded
+                        : pool.normal
+                      : []
+                    const currentText = affixTextOf(a)
+                    const selected =
+                      hasPool && candidates.some((c) => c === currentText) ? currentText : undefined
+                    return (
+                      <div
+                        key={`${affixTextOf(a)}-${i}`}
+                        className={`equip__edit-affix ${a.corrupted ? 'equip__edit-affix--corrupted' : ''}`}
+                      >
+                        <div className="equip__edit-affix-row">
+                          {hasPool ? (
+                            <Select
+                              className="equip__graft-select"
+                              size="small"
+                              showSearch
+                              placeholder={formatMessage({ id: 'equip.legendPoolPick' })}
+                              value={selected}
+                              filterOption={filterAffixOption}
+                              onChange={(v) => selectLegendPoolAffix(i, v)}
+                              options={candidates.map((t) => ({
+                                value: t,
+                                text: t,
+                                label: renderAffixOption({ Entry: t }),
+                              }))}
+                            />
+                          ) : (
+                            <div className="equip__edit-affix-text">
+                              {cleanAffixText(affixDisplayText(a))}
+                              {a.corrupted && (
+                                <span className="equip__edit-affix-corrupted-tag">
+                                  {formatMessage({ id: 'equip.corruptedTag' })}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          {form.canCorrupt && (
+                            <Button
+                              size="small"
+                              className="equip__edit-affix-erode"
+                              onClick={() => toggleAffixCorrupted(i)}
+                            >
+                              {a.corrupted
+                                ? formatMessage({ id: 'equip.uncorrupt' })
+                                : formatMessage({ id: 'equip.corrupt' })}
+                            </Button>
                           )}
                         </div>
-                        {form.canCorrupt && (
-                          <Button
-                            size="small"
-                            className="equip__edit-affix-erode"
-                            onClick={() => toggleAffixCorrupted(i)}
-                          >
-                            {a.corrupted
-                              ? formatMessage({ id: 'equip.uncorrupt' })
-                              : formatMessage({ id: 'equip.corrupt' })}
-                          </Button>
-                        )}
+                        <AffixRangeSliders affix={a} onChange={(j, v) => updateAffixValue(i, j, v)} />
                       </div>
-                      <AffixRangeSliders affix={a} onChange={(j, v) => updateAffixValue(i, j, v)} />
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </>

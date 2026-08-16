@@ -3,7 +3,7 @@ import { t } from '../locales/index.js'
 import { saveStore } from './saveStore.js'
 import { uuidv4 } from './uuid.js'
 import { normalizeTalentType } from '../data/divinityData.js'
-import { normalizeStates } from '../utils/combatStates.js'
+import { normalizeStates, applyBlessingCaps } from '../utils/combatStates.js'
 import {
   aggregateDivinityAffixes,
   aggregateEquipmentAffixes,
@@ -17,12 +17,18 @@ import {
   collectPactAffixTexts,
   collectSkillAffixTexts,
   collectTalentAffixTexts,
+  computeBlessingCaps,
 } from '../utils/affixAggregation.js'
 import {
   computeDamage,
   computeDefense,
   unconsumedAffixes,
 } from '../utils/damageEngine.js'
+import { aggregateMinionAffixStats } from '../utils/minionAffixStats.js'
+import { collectSkillLevelAffixes } from '../utils/skillLevelBonus.js'
+import { aggregateCharacterStats } from '../utils/characterStats.js'
+import { aggregateSurvivalStats } from '../utils/survivalStats.js'
+import { localArmorEvasionValue } from '../utils/survivalAffix.js'
 import talentImageData from '../assets/json/天赋/天赋所对应的图片位置.json'
 
 export const DEFAULT_MEMORY_SLOTS = [
@@ -32,8 +38,8 @@ export const DEFAULT_MEMORY_SLOTS = [
 ]
 
 // ===== 技能模块：固定 5 个主动技能栏 + 4 个被动技能栏，各栏含辅助技能槽 =====
-export const MAIN_SLOT_COUNT = 5
-export const PASSIVE_SLOT_COUNT = 4
+export const MAIN_SLOT_COUNT = 7
+export const PASSIVE_SLOT_COUNT = 6
 export const MAX_SUPPORTS = 5
 
 // 主动技能栏辅助槽数量：核心技能（第 1 栏）5 个，其余主动技能 4 个；被动技能栏每栏 4 个
@@ -318,14 +324,15 @@ function computeStats(build) {
     if (!slot) continue
     const item = typeof slot === 'object' ? slot : equipMap[slot]
     if (!item) continue
+    const localAE = localArmorEvasionValue(item)
     str += item.str || 0
     dex += item.dex || 0
     int_ += item.int || 0
     maxLife += item.maxLife || 0
     maxMana += item.maxMana || 0
     energyShield += item.energyShield || 0
-    armor += item.armor || 0
-    evasion += item.evasion || 0
+    armor += localAE.armor
+    evasion += localAE.evasion
     coldRes += item.coldRes || 0
     lightningRes += item.lightningRes || 0
     fireRes += item.fireRes || 0
@@ -582,11 +589,15 @@ class BuildStore {
     return computeStats(this.build)
   }
 
+  get blessingCaps() {
+    return computeBlessingCaps(this.build)
+  }
+
   get engineStats() {
     const cfg = this.build.configuration || {}
     const ctx = {
       build: this.build,
-      states: this.build.configuration,
+      states: applyBlessingCaps(this.build.configuration, computeBlessingCaps(this.build)),
       affixTexts: [
         ...collectDivinityAffixTexts(this.build),
         ...collectTalentAffixTexts(this.build),
@@ -636,6 +647,26 @@ class BuildStore {
     return aggregateSkillAffixes(this.build)
   }
 
+  // 魔灵技能相关词缀聚合（暴击/穿透/魔灵之源/数量上限等），供技能计算 tab 展示
+  get minionAffixStats() {
+    return aggregateMinionAffixStats(this.build)
+  }
+
+  // 全部「技能等级±N」词缀（含负值），供技能页按技能标签计算等级加成
+  get skillLevelAffixes() {
+    return collectSkillLevelAffixes(this.build)
+  }
+
+  // 角色杂项统计（移动速度加成/技能效果持续时间/魔力封印补偿/全域召唤数量上限），供基础属性 tab 展示
+  get characterStats() {
+    return aggregateCharacterStats(this.build)
+  }
+
+  // 生存板块统计（护甲/闪避总值与加成、抗性、返还、魔力回复、护盾充能），供基础属性 tab 展示
+  get survivalStats() {
+    return aggregateSurvivalStats(this.build)
+  }
+
   // 未被计算引擎消费的词缀，按来源（神格石板/天赋/装备/追忆/契灵/技能）分组。
   // 供"未计入词缀"面板展示：识别标注 > 静默忽略。
   get unconsumedAffixGroups() {
@@ -647,10 +678,12 @@ class BuildStore {
       pact: collectPactAffixTexts(this.build),
       skill: collectSkillAffixTexts(this.build),
     }
+    // 战斗状态用于条件词缀门控（与计算端一致），保证「统计已计入 ⇔ 计算真实计入」。
+    const states = normalizeStates(this.build && this.build.configuration)
     const groups = []
     for (const [source, texts] of Object.entries(sources)) {
       if (!Array.isArray(texts) || texts.length === 0) continue
-      const items = unconsumedAffixes(texts)
+      const items = unconsumedAffixes(texts, states)
       if (items.length === 0) continue
       groups.push({ source, items })
     }

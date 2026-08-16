@@ -38,6 +38,7 @@ function toSkill(key, family, d) {
     imgPath: d.图片地址 || '',
     levels: Array.isArray(d.等级词缀) ? d.等级词缀 : [],
     affixes: Array.isArray(d.词缀) ? d.词缀 : [],
+    minion: d['minion属性'] && typeof d['minion属性'] === 'object' ? d['minion属性'] : null,
   }
 }
 
@@ -75,13 +76,16 @@ export function skillByFamilyName(family, name) {
   return byFamilyName[`${family}:${name}`] || null
 }
 
-// 主动技能某等级「伤害倍率」（%）→ effectiveness，无数据返回 0
+// 主动技能某等级「伤害倍率」（%）→ effectiveness；仅 1~20 级有数据，21 级及以上回退到最近可用等级（20 级），无数据返回 0
 export function effectivenessAt(skill, level) {
   if (!skill || !Array.isArray(skill.levels)) return 0
-  const lv = String(level || 1)
-  const entry = skill.levels.find((e) => String(e.level) === lv)
-  if (entry && entry.伤害倍率 != null) {
-    const v = parseFloat(String(entry.伤害倍率))
+  const lv = Number(level || 1)
+  const usable = skill.levels
+    .filter((e) => e && e['伤害倍率'] != null && String(e['伤害倍率']).trim() !== '')
+    .sort((a, b) => Number(a.level) - Number(b.level))
+  const entry = usable.filter((e) => Number(e.level) <= lv).pop() || usable[0]
+  if (entry && entry['伤害倍率'] != null) {
+    const v = parseFloat(String(entry['伤害倍率']))
     if (!Number.isNaN(v)) return v
   }
   return 0

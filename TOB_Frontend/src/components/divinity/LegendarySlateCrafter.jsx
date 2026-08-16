@@ -25,6 +25,7 @@ const TYPE_COLOR = {
 
 // 槽位占位文本（<...>）-> 允许的天赋类型（中文），顺序：最具体匹配在前
 const SLOT_TYPE_RULES = [
+  { match: '小型天赋或中型天赋或传奇中型天赋', types: ['小型天赋', '中型天赋', '传奇中型天赋'] },
   { match: '小型天赋或中型天赋', types: ['小型天赋', '中型天赋'] },
   { match: '中型天赋或一级核心天赋', types: ['中型天赋', '一级核心天赋'] },
   { match: '二级核心天赋', types: ['二级核心天赋'] },
@@ -41,7 +42,7 @@ const LEGENDARY_SHAPE_MAP = {
   神性一角: 'CornerL',
   群星辉陨: 'Vertical2',
   神之谱系: 'Pedigree',
-  寰空神隙: 'Vertical2',
+  寰空神隙: 'Vertical6',
   众星归所: 'Single',
 }
 
@@ -49,22 +50,34 @@ const LEGENDARY_SHAPE_CONFIG = {
   Single: { canRotate: false, canFlip: false },
   CornerL: { canRotate: true, canFlip: true },
   Vertical2: { canRotate: true, canFlip: true },
+  Vertical6: { canRotate: true, canFlip: true },
   Pedigree: { canRotate: true, canFlip: true },
 }
 
-// 星星蛾火：4 个复制方向（上/下/左/右），制作时可选择启用哪些方向
-const DIRECTION_ORDER = ['上', '下', '左', '右']
+// 方向复制类传奇石板：制作时选择复制方向（单选）
+// 星星蛾火：上/下/左/右，复制对应方向相邻石板最后一条天赋
+// 寰空神隙：左/右，复制对应方向相邻石板"中型/传奇中型/至臻冥王"类型天赋
 const DIRECTION_MSG_ID = {
   上: 'divinity.legendaryCrafter.dirUp',
   下: 'divinity.legendaryCrafter.dirDown',
   左: 'divinity.legendaryCrafter.dirLeft',
   右: 'divinity.legendaryCrafter.dirRight',
 }
-const DIRECTION_AFFIX_TEXT = {
-  上: '复制上侧相邻石板的最后一条天赋到该石板，无法复制核心天赋',
-  下: '复制下侧相邻石板的最后一条天赋到该石板，无法复制核心天赋',
-  左: '复制左侧相邻石板的最后一条天赋到该石板，无法复制核心天赋',
-  右: '复制右侧相邻石板的最后一条天赋到该石板，无法复制核心天赋',
+const DIRECTION_OPTIONS = {
+  星星蛾火: ['上', '下', '左', '右'],
+  寰空神隙: ['左', '右'],
+}
+const COPY_AFFIX_TEMPLATES = {
+  星星蛾火: {
+    上: '复制上侧相邻石板的最后一条天赋到该石板，无法复制核心天赋',
+    下: '复制下侧相邻石板的最后一条天赋到该石板，无法复制核心天赋',
+    左: '复制左侧相邻石板的最后一条天赋到该石板，无法复制核心天赋',
+    右: '复制右侧相邻石板的最后一条天赋到该石板，无法复制核心天赋',
+  },
+  寰空神隙: {
+    左: '复制左侧相邻石板的中型天赋、传奇中型天赋和至臻冥王天赋到该石板',
+    右: '复制右侧相邻石板的中型天赋、传奇中型天赋和至臻冥王天赋到该石板',
+  },
 }
 
 const NETHER_TYPES = ['小型冥王天赋点', '中型冥王天赋点', '传奇中型冥王天赋点', '至臻冥王天赋点']
@@ -81,7 +94,7 @@ function parseSlotTypes(text) {
 function buildTemplate(name, data) {
   const shape = LEGENDARY_SHAPE_MAP[name] || 'Single'
   const shapeConfig = LEGENDARY_SHAPE_CONFIG[shape] || LEGENDARY_SHAPE_CONFIG.Single
-  if (name === '星星蛾火') {
+  if (name === '星星蛾火' || name === '寰空神隙') {
     return {
       key: name,
       name,
@@ -92,7 +105,7 @@ function buildTemplate(name, data) {
       canFlip: shapeConfig.canFlip,
       fixedAffixes: [],
       affixSlots: [],
-      directionSlots: [...DIRECTION_ORDER],
+      directionSlots: [...(DIRECTION_OPTIONS[name] || [])],
     }
   }
   const fixedAffixes = []
@@ -200,7 +213,8 @@ export default function LegendarySlateCrafter({ onSave }) {
 
     let affixes = []
     if (tmpl.directionSlots && tmpl.directionSlots.length) {
-      affixes = [{ slotIndex: 0, nodeType: '', text: DIRECTION_AFFIX_TEXT[craftDirection] || '' }]
+      const templates = COPY_AFFIX_TEMPLATES[tmpl.name] || {}
+      affixes = [{ slotIndex: 0, nodeType: '', text: templates[craftDirection] || '' }]
     } else if (tmpl.fixedAffixes && tmpl.fixedAffixes.length) {
       affixes = tmpl.fixedAffixes.map((fa, i) => ({ slotIndex: i, nodeType: '', text: fa.text }))
     } else if (tmpl.affixSlots && tmpl.affixSlots.length) {
@@ -319,7 +333,7 @@ export default function LegendarySlateCrafter({ onSave }) {
                 {formatMessage({ id: 'divinity.legendaryCrafter.directions' })}
               </label>
               <div className="divinity-tool-row">
-                {DIRECTION_ORDER.map((dir) => (
+                {currentTemplate.directionSlots.map((dir) => (
                   <button
                     key={dir}
                     type="button"

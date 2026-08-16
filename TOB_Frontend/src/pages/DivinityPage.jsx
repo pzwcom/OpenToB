@@ -284,7 +284,7 @@ function DivinityPage() {
               </span>
             ))}
             <span className="divinity__legend-item">
-              <span className="divinity__legend-dot" style={{ backgroundColor: '#ea580c' }} />
+              <span className="divinity__legend-dot" style={{ backgroundColor: '#eab308' }} />
               {formatMessage({ id: 'divinity.legendary' })}
             </span>
             <span className="divinity__legend-item">

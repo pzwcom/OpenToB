@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useIntl } from 'react-intl'
 import { cleanAffixText } from '../../utils/affixText.js'
+import { AFFIX_CONSUMERS } from '../../utils/affixConsumers.js'
 import './AffixStatsPanel.less'
 
 function countOf(stats) {
@@ -8,6 +9,10 @@ function countOf(stats) {
     stats.increase.reduce((s, g) => s + g.count, 0) +
     stats.more.reduce((s, g) => s + g.count, 0) +
     stats.flat.reduce((s, g) => s + g.count, 0) +
+    AFFIX_CONSUMERS.reduce(
+      (s, c) => s + (stats[c.key] || []).reduce((x, g) => x + g.count, 0),
+      0
+    ) +
     stats.others.reduce((s, g) => s + g.count, 0)
   )
 }
@@ -108,6 +113,28 @@ function AffixGroups({ stats, formatMessage }) {
           ))}
         </Group>
       )}
+
+      {AFFIX_CONSUMERS.map((c) => {
+        const items = stats[c.key] || []
+        if (items.length === 0) return null
+        return (
+          <Group
+            key={c.key}
+            titleKey={c.label}
+            count={items.reduce((s, g) => s + g.count, 0)}
+            formatMessage={formatMessage}
+          >
+            {items.map((g) => (
+              <div key={g.text} className="affix__row">
+                <span className="affix__row-text">{cleanAffixText(g.text)}</span>
+                <span className="affix__row-count">
+                  {formatMessage({ id: 'affixStats.times' }, { count: g.count })}
+                </span>
+              </div>
+            ))}
+          </Group>
+        )
+      })}
 
       {stats.others.length > 0 && (
         <Group

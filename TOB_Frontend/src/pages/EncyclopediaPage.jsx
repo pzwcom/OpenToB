@@ -1,19 +1,17 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 import { Empty, Input, Tabs, Tooltip } from 'antd'
 import BaseModal from '../components/ui/BaseModal.jsx'
 import { searchEncyclopedia } from '../utils/encyclopediaIndex.js'
+import { encyclopediaStore } from '../stores/encyclopediaStore.js'
 import './EncyclopediaPage.less'
 
 const { Search } = Input
 
 function EncyclopediaPage() {
   const { formatMessage } = useIntl()
-  const [query, setQuery] = useState('')
-  const [activeCategory, setActiveCategory] = useState('')
-  const [activeSub, setActiveSub] = useState('')
-  const [detail, setDetail] = useState(null)
+  const { query, activeCategory, activeSub, detail } = encyclopediaStore
 
   const groups = useMemo(() => searchEncyclopedia(query), [query])
 
@@ -22,14 +20,6 @@ function EncyclopediaPage() {
     currentCategory?.subs.find((s) => s.name === activeSub) ||
     currentCategory?.subs[0] ||
     null
-
-  function handleSearch(value) {
-    const q = (value || '').trim()
-    setQuery(q)
-    setActiveCategory('')
-    setActiveSub('')
-    setDetail(null)
-  }
 
   return (
     <div className="ency">
@@ -42,7 +32,9 @@ function EncyclopediaPage() {
           allowClear
           enterButton
           size="large"
-          onSearch={handleSearch}
+          value={query}
+          onChange={(e) => encyclopediaStore.setQuery(e.target.value)}
+          onSearch={(value) => encyclopediaStore.handleSearch(value)}
         />
       </div>
 
@@ -61,8 +53,8 @@ function EncyclopediaPage() {
           <Tabs
             activeKey={currentCategory ? currentCategory.category : ''}
             onChange={(key) => {
-              setActiveCategory(key)
-              setActiveSub('')
+              encyclopediaStore.setCategory(key)
+              encyclopediaStore.setSub('')
             }}
             className="ency__cat-tabs"
             items={groups.map((g) => ({
@@ -81,7 +73,7 @@ function EncyclopediaPage() {
             <>
               <Tabs
                 activeKey={currentSub ? currentSub.name : ''}
-                onChange={setActiveSub}
+                onChange={(key) => encyclopediaStore.setSub(key)}
                 size="small"
                 className="ency__sub-tabs"
                 items={currentCategory.subs.map((s) => ({
@@ -98,12 +90,14 @@ function EncyclopediaPage() {
 
               {currentSub && (
                 <div className="ency__list">
-                  {currentSub.items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="ency__card"
-                      onClick={() => setDetail(item)}
-                    >
+                  {currentSub.items.map((item) => {
+                    const clickable = item.category === 'equip' && item.subCategory === '传奇装备'
+                    return (
+                      <div
+                        key={item.id}
+                        className={`ency__card${clickable ? '' : ' ency__card--static'}`}
+                        onClick={clickable ? () => encyclopediaStore.setDetail(item) : undefined}
+                      >
                       {item.image && (
                         <div className="ency__card-thumb">
                           <img
@@ -117,7 +111,7 @@ function EncyclopediaPage() {
                         </div>
                       )}
                       <div className="ency__card-main">
-                        {item.hints?.length ? (
+                        {item.hints?.length && item.category !== 'talent' ? (
                           <Tooltip
                             placement="top"
                             overlayClassName="ency__tooltip"
@@ -146,7 +140,8 @@ function EncyclopediaPage() {
                         )}
                       </div>
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </>
@@ -156,7 +151,7 @@ function EncyclopediaPage() {
 
       <BaseModal
         isOpen={Boolean(detail)}
-        onClose={() => setDetail(null)}
+        onClose={() => encyclopediaStore.setDetail(null)}
         size="md"
         title={detail ? `${detail.name}` : ''}
       >
@@ -179,7 +174,7 @@ function EncyclopediaPage() {
                 </div>
               ))}
             </div>
-            {detail.hints?.length > 0 && (
+            {detail.hints?.length > 0 && detail.category !== 'talent' && (
               <div className="ency__detail-hints">
                 <div className="ency__detail-hints-title">提示</div>
                 {detail.hints.map((h, i) => (

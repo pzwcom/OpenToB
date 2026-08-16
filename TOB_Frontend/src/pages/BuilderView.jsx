@@ -13,7 +13,6 @@ import SkillsPage from './SkillsPage.jsx'
 import HeroPage from './HeroPage.jsx'
 import PactSpiritPage from './PactSpiritPage.jsx'
 import DivinityPage from './DivinityPage.jsx'
-import ConfigurationPage from './ConfigurationPage.jsx'
 import CalculationsPage from './CalculationsPage.jsx'
 
 const EncyclopediaPage = lazy(() =>
@@ -27,7 +26,6 @@ const tabs = [
   { to: '/builder/skills', label: '技能' },
   { to: '/builder/divinity', label: '神格石板' },
   { to: '/builder/pactspirit', label: '契灵&命运' },
-  { to: '/builder/configuration', label: '配置' },
   { to: '/builder/calculations', label: '计算' },
   { to: '/builder/encyclopedia', label: '火炬百科' },
 ]
@@ -100,7 +98,6 @@ function BuilderView() {
             <Route path="/builder/hero" component={HeroPage} />
             <Route path="/builder/pactspirit" component={PactSpiritPage} />
             <Route path="/builder/divinity" component={DivinityPage} />
-            <Route path="/builder/configuration" component={ConfigurationPage} />
             <Route path="/builder/calculations" component={CalculationsPage} />
             <Route
               path="/builder/encyclopedia"

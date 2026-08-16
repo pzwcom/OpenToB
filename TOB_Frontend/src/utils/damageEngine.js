@@ -1,6 +1,13 @@
 import { normalizeStates, evaluateCondition } from './combatStates.js'
 import { collectEffects } from './specialAffixRules.js'
 import { cleanAffixText } from './affixText.js'
+import { consumerOf } from './affixConsumers.js'
+import { forEachGatedClause } from './conditionClauses.js'
+import { shieldAffixRe } from './shieldAffix.js'
+import { consumesMaxLifeAffix, consumesMaxManaAffix } from './vitalsAffix.js'
+import { localArmorEvasionValue } from './survivalAffix.js'
+
+const { LOCAL_SHIELD_PCT_RE, LOCAL_SHIELD_FLAT_RE, SHIELD_SKIP_RE } = shieldAffixRe
 
 export const ELEMENTS = ['physical', 'cold', 'fire', 'lightning', 'erosion', 'chaos']
 const ELEMENTAL = ['cold', 'fire', 'lightning']
@@ -10,6 +17,13 @@ const VALUE_RE = /([+-]?\d+(?:\.\d+)?)\s*%/
 const RANGE_RE = /(\d+(?:\.\d+)?)\s*[~〜\-－—–]\s*(\d+(?:\.\d+)?)/
 const FLAT_RE = /点(物理|火焰|冰冷|闪电|腐蚀|侵蚀|混乱)伤害/
 
+// 护盾（能量护盾）：
+// 总护盾值 = (各个装备护盾值总和) × 总Inc × more1 × more2 × 条件more…
+// 各个装备护盾值 = 该装备护盾值 × (1 + 该装备护盾%增加 / 100)
+// 基底来源：装备「+X该装备护盾」平值（含范围取中值）；英雄能量护盾基准（50 级定义，随等级缩放取整）。
+// 全局「+X%最大护盾」为加算（总Inc），「额外+X%最大护盾」为乘区（含条件词缀，按战斗状态判定）；
+// 全局「+X最大护盾」平值（含「最大生命和最大护盾」组合平值）直接加入基底。
+// 相关正则与「哪些护盾词缀参与计算」的判定见 shieldAffix.js（与 affixConsumers 共享单一来源）。
 const ELEMENT_MAP = {
   物理: 'physical',
   火焰: 'fire',
@@ -113,8 +127,10 @@ function fallbackEffects(others) {
 }
 
 // 未被计算引擎消费的词缀清单：规则（RULES）未命中、且 fallback 也不消费（条件句/非伤害句/无数值句）的文本。
-// 用于"未计入词缀"面板：识别标注 > 静默忽略，避免静默算错。
-export function unconsumedAffixes(affixTexts) {
+// 旁路消费者词缀（祝福层数上限/魔灵面板等，见 affixConsumers.AFFIX_CONSUMERS）已被其他模块计入，
+// 此处排除，不再视为未计入。用于"未计入词缀"面板：识别标注 > 静默忽略，避免静默算错。
+// states 为战斗状态（normalizeStates 后），保证「统计已计入 ⇔ 计算真实计入」一致。
+export function unconsumedAffixes(affixTexts, states) {
   const { others } = collectEffects(affixTexts || [])
   const { consumed } = fallbackEffects(others)
   const map = new Map()
@@ -122,6 +138,7 @@ export function unconsumedAffixes(affixTexts) {
     const text = cleanAffixText(raw).trim()
     if (!text) continue
     if (consumed.has(text)) continue
+    if (consumerOf(text, states)) continue
     map.set(text, (map.get(text) || 0) + 1)
   }
   return [...map.entries()]
@@ -498,6 +515,170 @@ export function computeDamage(ctx) {
   return { ...result, stats: valueCtx.stats, dot }
 }
 
+// 护盾百分比数值：仅在含「%」时返回（范围取中值，单值取自身）；平值「+X最大护盾」走 flat 分支
+function shieldPctValue(text) {
+  if (!/%/.test(text)) return null
+  const rm = text.match(RANGE_RE)
+  if (rm) return (parseFloat(rm[1]) + parseFloat(rm[2])) / 2
+  const m = text.match(VALUE_RE)
+  return m ? parseFloat(m[1]) : null
+}
+
+// 各装备护盾值：遍历已装备槽位，从该装备词缀文本（基底词缀 + 词条）解析
+// 「该装备护盾」局部基底（平值/范围取中值）与「%该装备护盾」局部增加，按装备分别折算。
+function equipmentShieldBase(build) {
+  let total = 0
+  const equipMap = {}
+  for (const it of build.equipmentInventory || []) equipMap[it.id] = it
+  for (const slot of Object.values(build.equipment || {})) {
+    if (!slot) continue
+    const item = typeof slot === 'object' ? slot : equipMap[slot]
+    if (!item) continue
+    const texts = []
+    if (item.baseAffix) texts.push(item.baseAffix)
+    for (const a of Array.isArray(item.affixes) ? item.affixes : []) {
+      if (!a) continue
+      if (typeof a === 'string') texts.push(a)
+      else if (a && typeof a === 'object' && a.text) texts.push(a.text)
+    }
+    let base = 0
+    let pct = 0
+    for (const t of texts) {
+      for (const seg of String(t).split(/[;；]/)) {
+        const segText = seg.trim()
+        if (!segText.includes('该装备护盾')) continue
+        const pm = segText.match(LOCAL_SHIELD_PCT_RE)
+        if (pm) {
+          const v = pm[2] != null ? (parseFloat(pm[1]) + parseFloat(pm[2])) / 2 : parseFloat(pm[1])
+          pct += v
+          continue
+        }
+        const rm = segText.match(RANGE_RE)
+        if (rm) {
+          base += (parseFloat(rm[1]) + parseFloat(rm[2])) / 2
+        } else {
+          const vm = segText.match(LOCAL_SHIELD_FLAT_RE)
+          if (vm) base += parseFloat(vm[1])
+        }
+      }
+    }
+    total += base * (1 + pct / 100)
+  }
+  return total
+}
+
+// 护盾总计算：总护盾 = (各装备护盾值 + 英雄护盾基准) × (1 + 总Inc/100) × ∏(1 + more%/100)
+// 条件 more 词缀按战斗状态开关判定（splitLeadingCondition）；「该装备」局部词缀已在装备级计入，全局跳过。
+export function computeShield(ctx) {
+  const build = (ctx && ctx.build) || {}
+  const states = normalizeStates(ctx && ctx.states)
+  const base = equipmentShieldBase(build)
+
+  const hero = build.heroTraits || {}
+  const heroLevel = hero.level || 1
+  const heroBase = Math.ceil(((hero.bonusES || 0) * heroLevel) / 50)
+
+  let inc = 0
+  let more = 1
+  let flat = 0
+  for (const raw of (ctx && ctx.affixTexts) || []) {
+    forEachGatedClause(raw, states, (text) => {
+      if (!text.includes('最大护盾')) return
+      if (SHIELD_SKIP_RE.test(text)) return
+      const v = shieldPctValue(text)
+      if (v == null) {
+        const rm = text.match(RANGE_RE)
+        if (rm) flat += (parseFloat(rm[1]) + parseFloat(rm[2])) / 2
+        else {
+          const vm = text.match(/[+-]?\d+(?:\.\d+)?/)
+          if (vm) flat += parseFloat(vm[0])
+        }
+        return
+      }
+      if (/额外/.test(text)) more *= 1 + v / 100
+      else inc += v
+    })
+  }
+
+  return {
+    total: Math.round((base + heroBase + flat) * (1 + inc / 100) * more),
+    base: Math.round(base + heroBase + flat),
+    inc,
+    more: Math.round((more - 1) * 100),
+  }
+}
+
+// 最大生命 / 最大魔力统一计算（与 computeShield 同构）：
+// 总值 = (装备基底 + 英雄基准) × (1 + 总Inc/100) × ∏(1 + more%/100) + 全局平值
+// 装备基底 = 已装备槽位 item 的 maxLife/maxMana 字段；英雄基准 = bonusLife/bonusMana（50 级定义，随等级缩放取整）。
+// 全局「+X%最大生命/最大魔力」为加算（总Inc），「额外+X%最大生命/最大魔力」为乘区（含条件词缀，按战斗状态判定）；
+// 全局「+X最大生命/最大魔力」平值（含范围取中值）直接加入基底。
+// 「哪些词缀参与计算」的判定见 vitalsAffix.js（consumesMaxLifeAffix / consumesMaxManaAffix，与 affixConsumers 共享单一来源）。
+function computeVitalsMax(ctx, opts) {
+  const build = (ctx && ctx.build) || {}
+  const states = normalizeStates(ctx && ctx.states)
+  const equipKey = opts.equipKey
+  const bonusKey = opts.bonusKey
+  const consumes = opts.consumes
+
+  let base = 0
+  const equipMap = {}
+  for (const it of build.equipmentInventory || []) equipMap[it.id] = it
+  for (const slot of Object.values(build.equipment || {})) {
+    if (!slot) continue
+    const item = typeof slot === 'object' ? slot : equipMap[slot]
+    if (!item) continue
+    base += item[equipKey] || 0
+  }
+  const hero = build.heroTraits || {}
+  const heroLevel = hero.level || 1
+  const heroBase = Math.ceil(((hero[bonusKey] || 0) * heroLevel) / 50)
+
+  let inc = 0
+  let more = 1
+  let flat = 0
+  for (const raw of (ctx && ctx.affixTexts) || []) {
+    forEachGatedClause(raw, states, (text) => {
+      if (!consumes(text)) return
+      const v = shieldPctValue(text)
+      if (v == null) {
+        const rm = text.match(RANGE_RE)
+        if (rm) flat += (parseFloat(rm[1]) + parseFloat(rm[2])) / 2
+        else {
+          const vm = text.match(/[+-]?\d+(?:\.\d+)?/)
+          if (vm) flat += parseFloat(vm[0])
+        }
+        return
+      }
+      if (/额外/.test(text)) more *= 1 + v / 100
+      else inc += v
+    })
+  }
+
+  return {
+    total: Math.round((base + heroBase + flat) * (1 + inc / 100) * more),
+    base: Math.round(base + heroBase + flat),
+    inc,
+    more: Math.round((more - 1) * 100),
+  }
+}
+
+export function computeMaxLife(ctx) {
+  return computeVitalsMax(ctx, {
+    equipKey: 'maxLife',
+    bonusKey: 'bonusLife',
+    consumes: consumesMaxLifeAffix,
+  })
+}
+
+export function computeMaxMana(ctx) {
+  return computeVitalsMax(ctx, {
+    equipKey: 'maxMana',
+    bonusKey: 'bonusMana',
+    consumes: consumesMaxManaAffix,
+  })
+}
+
 function baseDefenseStats(build) {
   const d = {
     armor: 0,
@@ -515,8 +696,9 @@ function baseDefenseStats(build) {
     if (!slot) continue
     const item = typeof slot === 'object' ? slot : equipMap[slot]
     if (!item) continue
-    d.armor += item.armor || 0
-    d.evasion += item.evasion || 0
+    const { armor, evasion } = localArmorEvasionValue(item)
+    d.armor += armor
+    d.evasion += evasion
     d.maxLife += item.maxLife || 0
     d.maxMana += item.maxMana || 0
     d.energyShield += item.energyShield || 0
@@ -550,6 +732,12 @@ export function computeDefense(ctx) {
   }
   const d = baseDefenseStats(build)
   applyStatEffects(effects, states, valueCtx)
+  // 护盾（能量护盾）总计算：总护盾 = (各装备护盾值 + 英雄护盾基准) × 总Inc × more1 × more2 × 条件more…
+  const shield = computeShield(ctx)
+  d.energyShield = shield.total
+  // 最大生命 / 最大魔力统一计算（与护盾同构，覆盖 baseDefenseStats 的装备+英雄基底）
+  d.maxLife = computeMaxLife(ctx).total
+  d.maxMana = computeMaxMana(ctx).total
   const penalties = []
   for (const e of effects) {
     if (!effectApplies(e, states)) continue
@@ -569,7 +757,6 @@ export function computeDefense(ctx) {
       else if (tgt === 'evasion') d.evasion *= 1 + v
       else if (tgt === 'maxLife') d.maxLife *= 1 + v
       else if (tgt === 'maxMana') d.maxMana *= 1 + v
-      else if (tgt === 'energyShield') d.energyShield *= 1 + v
       else if (tgt === 'damageReduction') d.damageReduction += v
       else if (typeof tgt === 'string' && tgt.endsWith('Res')) {
         const key = tgt.replace(/Res$/, '')

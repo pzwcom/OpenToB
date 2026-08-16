@@ -1,4 +1,6 @@
 import { cleanAffixText } from './affixText.js'
+import { AFFIX_CONSUMERS, consumerOf, parseBlessingCapMatches, BLESSING_KEY_BY_NAME } from './affixConsumers.js'
+import { normalizeStates } from './combatStates.js'
 import { affixDisplayText } from './affixRange.js'
 import {
   CORE_BOOST_FACTOR,
@@ -28,21 +30,31 @@ const FLAT_RE = /点(?:物理|火焰|冰冷|闪电|元素|腐蚀|侵蚀|混乱|�
 // 归总一组原始词缀文本：
 // - 普通 `+X%` 为 increase，同文本词缀计数并求和；
 // - `额外+X%` / `additional` 为 more，独立乘区，同文本词缀相乘；
-// - 附加固定伤害（点伤）为 flat，只计数不求和。
-// 返回值：{ increase, more, flat, others }
+// - 附加固定伤害（点伤）为 flat，只计数不求和；
+// - 旁路消费者词缀（祝福层数上限/魔灵面板等）各自成组，见 AFFIX_CONSUMERS。
+// states 为战斗状态（normalizeStates 后），用于消费者谓词的条件门控（与计算端一致）。
+// 返回值：{ increase, more, flat, [consumer.key...], others }
 //   increase: [{ text, count, value, total }]   total = value * count
 //   more:     [{ text, count, value, multiplier }]  multiplier = (1 + value/100) ^ count
 //   flat:     [{ text, count }]  附加固定伤害（点伤词缀）
 //   others:   [{ text, count }]  无法解析数值的词缀
-export function aggregateAffixTexts(affixTexts) {
+export function aggregateAffixTexts(affixTexts, states) {
   const increaseMap = new Map()
   const moreMap = new Map()
   const flatMap = new Map()
+  const consumerMaps = new Map(AFFIX_CONSUMERS.map((c) => [c.key, new Map()]))
   const othersMap = new Map()
 
   for (const raw of affixTexts) {
     const text = cleanAffixText(raw).trim()
     if (!text) continue
+    // 旁路消费者词缀：被对应模块（条件配置 / 技能计算 tab 等）计入，归入各自分组而非 others/increase
+    const consumer = consumerOf(text, states)
+    if (consumer) {
+      const m = consumerMaps.get(consumer.key)
+      m.set(text, (m.get(text) || 0) + 1)
+      continue
+    }
     if (FLAT_RE.test(text)) {
       flatMap.set(text, (flatMap.get(text) || 0) + 1)
       continue
@@ -73,14 +85,27 @@ export function aggregateAffixTexts(affixTexts) {
 
   const flat = [...flatMap.entries()].map(([text, count]) => ({ text, count }))
 
+  const consumerBuckets = Object.fromEntries(
+    AFFIX_CONSUMERS.map((c) => [
+      c.key,
+      [...(consumerMaps.get(c.key) || new Map()).entries()].map(([text, count]) => ({
+        text,
+        count,
+      })),
+    ])
+  )
+
   const others = [...othersMap.entries()].map(([text, count]) => ({ text, count }))
 
   increase.sort((a, b) => b.total - a.total)
   more.sort((a, b) => b.multiplier - a.multiplier)
   flat.sort((a, b) => b.count - a.count)
+  for (const key of Object.keys(consumerBuckets)) {
+    consumerBuckets[key].sort((a, b) => b.count - a.count)
+  }
   others.sort((a, b) => b.count - a.count)
 
-  return { increase, more, flat, others }
+  return { increase, more, flat, ...consumerBuckets, others }
 }
 
 // 神格石板冥王特性数值适配：
@@ -222,13 +247,28 @@ export function collectDivinitySlateEffects(build) {
 // 复制类传奇石板：把相邻石板的天赋复制到自身，无法复制核心天赋。
 // - 峨火燎原之刻：复制所有相邻石板（共边）的最后一条天赋。
 // - 星星蛾火：按方向词缀复制——每个方向（上/下/左/右）各复制对应方向相邻石板的最后一条天赋。
+// - 寰空神隙：固定左/右两个方向，复制对应方向相邻石板上所有"中型/传奇中型/至臻冥王"类型天赋。
 // 返回 Map<slateId, Array<{ text, source }>>，source 为来源石板名称（供悬浮提示展示）。
 // 只复制石板原有的天赋：跳过"复制…"特殊效果文本（其它复制效果得来的天赋不可再被复制）。
 const COPY_DIRECTION_DELTA = { 上: [-1, 0], 下: [1, 0], 左: [0, -1], 右: [0, 1] }
 
+// 寰空神隙可复制的天赋类型：中型/传奇中型（普通石板），至臻冥王（冥王石板）
+const LEFT_RIGHT_COPY_TYPES = ['中型天赋', '传奇中型天赋', '至臻冥王天赋点']
+
 function copyDirectionFromText(text) {
   const m = String(text || '').match(/复制([上下左右])侧/)
   return m ? m[1] : ''
+}
+
+function copyableAffixesOfTypes(slate, types) {
+  const affixes = Array.isArray(slate.affixes) ? slate.affixes : []
+  return affixes.filter((a) => {
+    const text = typeof a === 'string' ? a : a?.text
+    if (!text) return false
+    if (String(text).trim().startsWith('复制')) return false
+    const nodeType = typeof a === 'string' ? '' : a?.nodeType || ''
+    return types.includes(nodeType)
+  })
 }
 
 function lastCopyableAffix(slate) {
@@ -272,14 +312,10 @@ export function collectDivinityCopiedAffixes(build) {
   for (const entry of placedList) {
     const isAllAround = entry.slate.legendaryName === '蛾火燎原之刻'
     const isDirectional = entry.slate.legendaryName === '星星蛾火'
-    if (!isAllAround && !isDirectional) continue
+    const isLeftRight = entry.slate.legendaryName === '寰空神隙'
+    if (!isAllAround && !isDirectional && !isLeftRight) continue
 
     const copiedList = []
-    const slateAtCell = (r, c) =>
-      placedList.find((cand) =>
-        cand.slate.id !== entry.slate.id &&
-        cellsOf(cand).some(([cr, cc]) => cr === r && cc === c)
-      )
 
     if (isAllAround) {
       // 峨火燎原之刻：复制所有共边相邻石板
@@ -291,17 +327,30 @@ export function collectDivinityCopiedAffixes(build) {
         copiedList.push({ text: textOf(last), source: slateName(cand.slate) })
       }
     } else {
-      // 星星蛾火：按方向词缀逐个方向复制
+      // 方向复制：星星蛾火（方向相邻石板最后一条天赋）/ 寰空神隙（左/右相邻石板指定类型天赋）
+      const collectTarget = isLeftRight
+        ? (slate) => copyableAffixesOfTypes(slate, LEFT_RIGHT_COPY_TYPES)
+        : (slate) => {
+            const last = lastCopyableAffix(slate)
+            return last ? [last] : []
+          }
+      const findTarget = (dir) => {
+        const [dr, dc] = COPY_DIRECTION_DELTA[dir]
+        return placedList.find((cand) => {
+          if (cand.slate.id === entry.slate.id) return false
+          return cellsOf(entry).some(([r, c]) =>
+            cellsOf(cand).some(([cr, cc]) => cr === r + dr && cc === c + dc)
+          )
+        })
+      }
       for (const affix of entry.slate.affixes || []) {
         const dir = copyDirectionFromText(textOf(affix))
         if (!dir) continue
-        const [dr, dc] = COPY_DIRECTION_DELTA[dir]
-        const [baseRow, baseCol] = cellsOf(entry)[0]
-        const target = slateAtCell(baseRow + dr, baseCol + dc)
+        const target = findTarget(dir)
         if (!target) continue
-        const last = lastCopyableAffix(target.slate)
-        if (!last) continue
-        copiedList.push({ text: textOf(last), source: slateName(target.slate) })
+        for (const t of collectTarget(target.slate)) {
+          copiedList.push({ text: textOf(t), source: slateName(target.slate) })
+        }
       }
     }
     if (copiedList.length) copied.set(entry.slate.id, copiedList)
@@ -342,7 +391,7 @@ export function collectDivinityAffixTexts(build) {
 }
 
 export function aggregateDivinityAffixes(build) {
-  return aggregateAffixTexts(collectDivinityAffixTexts(build))
+  return aggregateAffixTexts(collectDivinityAffixTexts(build), normalizeStates(build && build.configuration))
 }
 
 // 收集 4 个天赋页（槽位）已加点词缀的原始文本：普通节点、核心天赋、逆像（按反像倍率缩放）、
@@ -424,7 +473,7 @@ export function collectTalentAffixTexts(build) {
 }
 
 export function aggregateTalentAffixes(build) {
-  return aggregateAffixTexts(collectTalentAffixTexts(build))
+  return aggregateAffixTexts(collectTalentAffixTexts(build), normalizeStates(build && build.configuration))
 }
 
 // 收集已装备（10 槽位）词缀原始文本：基底词缀 + 词条（含侵蚀词条，用已选数值回填）。
@@ -463,7 +512,7 @@ export function collectEquipmentAffixTexts(build) {
 }
 
 export function aggregateEquipmentAffixes(build) {
-  return aggregateAffixTexts(collectEquipmentAffixTexts(build))
+  return aggregateAffixTexts(collectEquipmentAffixTexts(build), normalizeStates(build && build.configuration))
 }
 
 // 收集契灵（契约链节点 + 宿命天赋）词缀原始文本：
@@ -519,7 +568,7 @@ export function collectPactAffixTexts(build) {
 }
 
 export function aggregatePactAffixes(build) {
-  return aggregateAffixTexts(collectPactAffixTexts(build))
+  return aggregateAffixTexts(collectPactAffixTexts(build), normalizeStates(build && build.configuration))
 }
 
 // 收集已装备英雄追忆（45/60/75 槽位 + 复苏词缀生成的特殊槽位）词缀原始文本：
@@ -574,7 +623,7 @@ export function collectMemoryAffixTexts(build) {
 }
 
 export function aggregateMemoryAffixes(build) {
-  return aggregateAffixTexts(collectMemoryAffixTexts(build))
+  return aggregateAffixTexts(collectMemoryAffixTexts(build), normalizeStates(build && build.configuration))
 }
 
 // 辅助技能某等级的等级词缀键文本：把键内「%」前的数值替换为该等级的实际数值。
@@ -658,5 +707,47 @@ export function collectSkillAffixTexts(build) {
 }
 
 export function aggregateSkillAffixes(build) {
-  return aggregateAffixTexts(collectSkillAffixTexts(build))
+  return aggregateAffixTexts(collectSkillAffixTexts(build), normalizeStates(build && build.configuration))
+}
+
+// 计算当前 BD 下三种祝福的最大层数（满层）：
+// 基础 4 层 + 各模块（神格石板/天赋/装备/追忆/契灵/技能）词缀对层数上限的加/减。
+// 神格石板词缀带「神格生效上限：1」时，同类词缀只计一次。
+// 祝福层数上限词缀的匹配/取值逻辑集中在 affixConsumers.js（AFFIX_CONSUMERS.blessing）。
+export function computeBlessingCaps(build) {
+  const BASE = 4
+  const caps = { agile: BASE, tough: BASE, focus: BASE }
+
+  const divTexts = Array.isArray(collectDivinityAffixTexts(build))
+    ? collectDivinityAffixTexts(build)
+    : []
+  const otherTexts = [
+    ...collectTalentAffixTexts(build),
+    ...collectEquipmentAffixTexts(build),
+    ...collectMemoryAffixTexts(build),
+    ...collectPactAffixTexts(build),
+    ...collectSkillAffixTexts(build),
+  ]
+
+  const apply = (text) => {
+    for (const { name, value } of parseBlessingCapMatches(text)) {
+      for (const key of BLESSING_KEY_BY_NAME[name] || []) caps[key] += value
+    }
+  }
+
+  // 神格石板：同类「神格生效上限：1」词缀只生效一次
+  const seenDiv = new Set()
+  for (const text of divTexts) {
+    const hasCapNote = /神格生效上限/.test(String(text || ''))
+    const key = String(text || '').replace(/（神格生效上限：1）/, '')
+    if (hasCapNote) {
+      if (seenDiv.has(key)) continue
+      seenDiv.add(key)
+    }
+    apply(text)
+  }
+
+  for (const text of otherTexts) apply(text)
+
+  return caps
 }

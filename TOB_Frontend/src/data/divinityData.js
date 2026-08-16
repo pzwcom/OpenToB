@@ -13,7 +13,7 @@ export const GOD_COLORS = {
 }
 
 export const LEGENDARY_SLATE_COLOR = {
-  bg: 'bg-orange-600', border: 'border-orange-500', fill: 'rgba(234,88,12,0.25)', stroke: '#ea580c',
+  bg: 'bg-yellow-600', border: 'border-yellow-500', fill: 'rgba(234,179,8,0.25)', stroke: '#eab308',
 }
 
 export const NETHER_KING_COLOR = {
@@ -127,6 +127,7 @@ export const SHAPE_DEFS = {
   Single:  { cells: [[0,0]], size: [1,1], label: '单格' },
   CornerL: { cells: [[0,0],[0,1],[1,0]], size: [2,2], label: '角L型' },
   Vertical2:{ cells: [[0,0],[1,0]], size: [2,1], label: '竖两格' },
+  Vertical6:{ cells: [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0]], size: [6,1], label: '竖六格' },
   Pedigree:{ cells: [[0,0],[0,1],[1,0],[1,1],[1,2],[2,1],[2,2]], size: [3,3], label: '谱系型' },
   NetherKing: { cells: [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]], size: [3,3], label: '冥王神格' },
   NetherKingJudgment: { cells: [[0,0],[0,3],[3,3]], size: [4,4], label: '冥王·审判' },
@@ -137,7 +138,7 @@ export const SHAPE_DEFS = {
 }
 
 export const REGULAR_SHAPES = ['O', 'L', 'Z', 'T']
-export const LEGENDARY_SHAPES = ['Single', 'CornerL', 'Vertical2', 'Pedigree']
+export const LEGENDARY_SHAPES = ['Single', 'CornerL', 'Vertical2', 'Vertical6', 'Pedigree']
 
 // Talent nodes grouped by god then tree
 // All data extracted from TLIPOB compiled assets

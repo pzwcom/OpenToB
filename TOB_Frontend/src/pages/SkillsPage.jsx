@@ -22,6 +22,7 @@ import {
   magnificentSupports,
 } from '../data/skillData.js'
 import { cleanAffixText } from '../utils/affixText.js'
+import { skillLevelBonusFor } from '../utils/skillLevelBonus.js'
 import './SkillsPage.less'
 
 const FAMILY_LABEL_KEYS = {
@@ -52,8 +53,30 @@ const FAMILY_SKILLS = {
   [SKILL_FAMILY.modular]: modularSkills,
 }
 
+// 魔灵「基础属性」字段 → i18n key（展示用）
+const MINION_BASE_FIELDS = [
+  ['mana', 'skills.minion.mana'],
+  ['shield', 'skills.minion.shield'],
+  ['hit', 'skills.minion.hit'],
+  ['dodge', 'skills.minion.dodge'],
+  ['attack_block', 'skills.minion.attackBlock'],
+  ['spell_block', 'skills.minion.spellBlock'],
+  ['火焰抗性', 'skills.minion.fireRes'],
+  ['冰冷抗性', 'skills.minion.coldRes'],
+  ['闪电抗性', 'skills.minion.lightningRes'],
+  ['腐蚀抗性', 'skills.minion.erosionRes'],
+  ['暴击值', 'skills.minion.critValue'],
+  ['暴击伤害', 'skills.minion.critDamage'],
+  ['hp_recovery', 'skills.minion.hpRecovery'],
+  ['mana_recovery', 'skills.minion.manaRecovery'],
+  ['move_speed', 'skills.minion.moveSpeed'],
+  ['defend_range', 'skills.minion.defendRange'],
+  ['teleport_range', 'skills.minion.teleportRange'],
+]
+
 const MIN_LEVEL = 1
-const MAX_LEVEL = 40
+// 技能等级手动调整上限（游戏内手动最高 21 级，其余由「+技能等级」词缀补足）
+const MAX_LEVEL = 21
 
 // 辅助技能槽（1 起）可放入的技能族：触媒只能进第 1 槽，华贵只能进第 3 槽，崇高只能进第 5 槽
 function allowedSupportFamilies(socketNumber) {
@@ -100,6 +123,112 @@ function skillLevelValues(skill) {
     .filter((x) => x.level != null && x.text)
 }
 
+// 解析可缩放数值：支持整数、小数与分数（如 37/5 → 7.4）
+function parseScaledValue(raw) {
+  if (raw == null) return null
+  const s = String(raw).trim()
+  if (!s) return null
+  if (s.includes('/')) {
+    const [a, b] = s.split('/')
+    const na = parseFloat(a)
+    const nb = parseFloat(b)
+    if (Number.isNaN(na) || Number.isNaN(nb) || nb === 0) return null
+    return na / nb
+  }
+  const v = parseFloat(s)
+  return Number.isNaN(v) ? null : v
+}
+
+// 按 (LvN:V) 断点表线性插值取等级值，越界取最近端点
+function interpolateLevelValue(points, lv) {
+  if (!points.length) return null
+  const sorted = [...points].sort((a, b) => a.lv - b.lv)
+  if (lv <= sorted[0].lv) return sorted[0].v
+  const last = sorted[sorted.length - 1]
+  if (lv >= last.lv) return last.v
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const a = sorted[i]
+    const b = sorted[i + 1]
+    if (lv >= a.lv && lv <= b.lv) {
+      if (b.lv === a.lv) return a.v
+      const t = (lv - a.lv) / (b.lv - a.lv)
+      return a.v + (b.v - a.v) * t
+    }
+  }
+  return last.v
+}
+
+function formatScaledValue(v) {
+  if (v == null) return ''
+  const r = Math.round(v * 100) / 100
+  return Number.isInteger(r) ? String(r) : String(r)
+}
+
+// 替换文本中内嵌的 (LvN:V) 断点表为当前等级取值，并同步更新表前的基准数值
+function applyLevelTables(text, lv) {
+  const tableRe = /\(Lv\d+:[^)]*\)/g
+  const matches = Array.from(text.matchAll(tableRe))
+  if (!matches.length) return text
+  const points = matches.map((m) => {
+    const inner = m[0].slice(1, -1)
+    const sep = inner.indexOf(':')
+    return { lv: Number(inner.slice(0, sep)), v: parseScaledValue(inner.slice(sep + 1)) }
+  })
+  if (points.some((p) => p.v == null)) return text.replace(tableRe, '')
+  const val = interpolateLevelValue(points, lv)
+  if (val == null) return text.replace(tableRe, '')
+  const firstIdx = matches[0].index
+  const before = text.slice(0, firstIdx)
+  const after = text.slice(firstIdx).replace(tableRe, '')
+  const numMatch = before.match(/^(.*?)(\d+(?:\.\d+)?)([^0-9]*)$/)
+  if (numMatch) return numMatch[1] + formatScaledValue(val) + numMatch[3] + after
+  return before + formatScaledValue(val) + after
+}
+
+// 技能介绍随等级变化：
+// 1) 介绍内嵌 (LvN:V) 断点表 → 插值替换；
+// 2) 被动技能 → 介绍是静态摘要，改用当前等级完整描述（Descript）；
+// 3) 主动等技能 → 替换「造成X%武器攻击伤害」为当前等级伤害倍率
+function introAtLevel(intro, skill, level) {
+  if (!intro) return intro
+  const lv = Number(level) || 1
+  let text = intro
+
+  // 1) 内嵌 (LvN:V) 断点表：整体替换为当前等级取值
+  text = applyLevelTables(text, lv)
+  if (/\(Lv\d+:[^)]*\)/.test(intro)) return text
+
+  // 2) 被动技能：介绍是静态摘要 → 采用当前等级完整描述（Descript），去掉开头「技能名：」前缀
+  if (skill && skill.family === SKILL_FAMILY.passive) {
+    const entry =
+      skill && Array.isArray(skill.levels)
+        ? skill.levels.find((e) => String(e.level) === String(lv))
+        : null
+    if (entry && entry.Descript) {
+      let d = String(entry.Descript)
+      const prefix = skill.name ? `${skill.name}：` : ''
+      if (prefix && d.indexOf(prefix) === 0) d = d.slice(prefix.length)
+      return applyLevelTables(d, lv)
+    }
+    return text
+  }
+
+  // 3) 主动等技能：把「造成X%武器攻击伤害」的百分比替换为当前等级的伤害倍率
+  //    数据中仅 1~20 级有伤害倍率，21 级及以上为空 → 回退到最近可用等级（20 级）数值
+  const usable =
+    skill && Array.isArray(skill.levels)
+      ? skill.levels
+          .filter((e) => e && e['伤害倍率'] != null && String(e['伤害倍率']).trim() !== '')
+          .sort((a, b) => Number(a.level) - Number(b.level))
+      : []
+  if (usable.length) {
+    const entry = usable.filter((e) => Number(e.level) <= lv).pop() || usable[0]
+    const pct = String(entry['伤害倍率']).replace('%', '')
+    return text.replace(/造成(\d+(?:\.\d+)?)%武器攻击伤害/, `造成${pct}%武器攻击伤害`)
+  }
+  return text
+}
+
 function SkillTooltipContent({ skill }) {
   const { formatMessage } = useIntl()
   if (!skill) return null
@@ -113,6 +242,9 @@ function SkillTooltipContent({ skill }) {
         <span className="sk-tip__name">{skill.name}</span>
         <span className="sk-tip__family">{familyLabel}</span>
       </div>
+      {skill.tags && skill.tags.length > 0 && (
+        <div className="sk-tip__tags">{skill.tags.join(' | ')}</div>
+      )}
       {skill.intro && <div className="sk-tip__intro">{skill.intro}</div>}
       {values.length > 0 && (
         <div className="sk-tip__values">
@@ -488,6 +620,22 @@ function SkillsPage() {
     const modularSkill = slotFamily === SKILL_FAMILY.modular
       ? skillByFamilyName(SKILL_FAMILY.modular, slot.name)
       : null
+    const levelSkill = modularSkill || (slot.name ? skillByFamilyName(slotFamily, slot.name) : null)
+
+    // 词缀「+N技能等级」加成（按技能标签匹配），有效等级 = 手动等级 + 加成
+    const slotTags =
+      Array.isArray(slot.tags) && slot.tags.length > 0
+        ? slot.tags
+        : levelSkill && Array.isArray(levelSkill.tags)
+          ? levelSkill.tags
+          : []
+    const levelBonus = skillLevelBonusFor(
+      { name: slot.name, group: focus.group, index: focus.index, family: slotFamily, tags: slotTags },
+      buildStore.skillLevelAffixes
+    )
+    const manualLevel = Math.min(slot.level, MAX_LEVEL)
+    const effectiveLevel = manualLevel + levelBonus
+    const effAt = levelSkill ? effectivenessAt(levelSkill, effectiveLevel) : slot.effectiveness
     return (
       <div className="sk-detail">
         <div className="sk-detail__head">
@@ -495,9 +643,16 @@ function SkillsPage() {
           <div className="sk-detail__head-main">
             <div className="sk-detail__name">{slot.name}</div>
             <div className="sk-detail__meta">
-              {familyLabel} · {formatMessage({ id: 'skills.levelShort' })} {slot.level}
-              {!isPassive && slot.effectiveness > 0 && (
-                <span className="sk-detail__eff"> · {slot.effectiveness}%</span>
+              {familyLabel} · {formatMessage({ id: 'skills.levelShort' })} {effectiveLevel}
+              {!isPassive && effAt > 0 && (
+                <span className="sk-detail__eff"> · {effAt}%</span>
+              )}
+              {levelBonus !== 0 && (
+                <span className="sk-detail__bonus">
+                  {' '}
+                  · {formatMessage({ id: 'skills.levelBonus' })}
+                  {levelBonus > 0 ? `+${levelBonus}` : levelBonus}
+                </span>
               )}
             </div>
           </div>
@@ -513,20 +668,80 @@ function SkillsPage() {
               className="sk-detail__slider"
               min={MIN_LEVEL}
               max={MAX_LEVEL}
-              value={slot.level}
+              value={manualLevel}
               onChange={(v) => setLevel(focus.group, focus.index, v)}
             />
             <InputNumber
               size="small"
               min={MIN_LEVEL}
               max={MAX_LEVEL}
-              value={slot.level}
+              value={manualLevel}
               onChange={(v) => setLevel(focus.group, focus.index, v || MIN_LEVEL)}
             />
+            {levelBonus !== 0 && (
+              <span
+                className={`sk-detail__manual-bonus ${levelBonus > 0 ? 'sk-detail__manual-bonus--pos' : 'sk-detail__manual-bonus--neg'}`}
+              >
+                {formatMessage({ id: 'skills.manualLevel' })} {manualLevel} (
+                {levelBonus > 0 ? `+${levelBonus}` : levelBonus})
+              </span>
+            )}
           </div>
         </div>
 
-        {slot.intro && <div className="sk-detail__intro">{slot.intro}</div>}
+        {slot.intro && (
+          <div className="sk-detail__intro">
+            {introAtLevel(slot.intro, levelSkill, effectiveLevel)}
+          </div>
+        )}
+
+        {levelSkill && levelSkill.minion && levelSkill.minion['基础属性'] && (
+          <div className="sk-detail__minion">
+            <div className="sk-detail__sub-title">
+              {formatMessage({ id: 'skills.minionTitle' })}
+            </div>
+            <div className="sk-detail__minion-growth">
+              {(() => {
+                const growthList = Array.isArray(levelSkill.minion['成长词缀'])
+                  ? levelSkill.minion['成长词缀']
+                  : []
+                const growth =
+                  growthList.filter((g) => g && String(g.skill_level) === String(effectiveLevel))[0] ||
+                  [...growthList]
+                    .filter((g) => g && Number(g.skill_level) <= effectiveLevel)
+                    .sort((a, b) => Number(b.skill_level) - Number(a.skill_level))[0]
+                  if (!growth) return null
+                return (
+                  <div className="sk-detail__minion-growth-row">
+                    <span>
+                      {formatMessage({ id: 'skills.minion.hp' })} {growth.hp}
+                    </span>
+                    <span>
+                      {formatMessage({ id: 'skills.minion.damage' })} {growth.damage}
+                    </span>
+                    <span>
+                      {formatMessage({ id: 'skills.minion.armour' })} {growth.armour}
+                    </span>
+                  </div>
+                )
+              })()}
+            </div>
+            <div className="sk-detail__minion-grid">
+              {MINION_BASE_FIELDS.map(([field, labelId]) => {
+                const v = levelSkill.minion['基础属性'][field]
+                if (v == null || v === '') return null
+                return (
+                  <span key={field} className="sk-detail__minion-item">
+                    <span className="sk-detail__minion-label">
+                      {formatMessage({ id: labelId })}
+                    </span>
+                    <span className="sk-detail__minion-value">{v}</span>
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {modularSkill && (
           <div className="sk-detail__modular">
@@ -563,8 +778,20 @@ function SkillsPage() {
             <div className="sk-detail__sub-title">
               {formatMessage({ id: 'skills.supports' })}
             </div>
-            {slot.supports.map((sup, i) =>
-              sup ? (
+            {slot.supports.map((sup, i) => {
+              const supSkill = sup.family ? skillByFamilyName(sup.family, sup.name) : null
+              const supTags =
+                Array.isArray(sup.tags) && sup.tags.length > 0
+                  ? sup.tags
+                  : supSkill && Array.isArray(supSkill.tags)
+                    ? supSkill.tags
+                    : []
+              const supBonus = skillLevelBonusFor(
+                { name: sup.name, group: focus.group, index: focus.index, family: sup.family, tags: supTags },
+                buildStore.skillLevelAffixes
+              )
+              const supManual = Math.min(sup.level, MAX_LEVEL)
+              return sup ? (
                 <div key={`${sup.id}-${i}`} className="sk-detail__support">
                   {sup.imgPath && <img src={sup.imgPath} alt="" className="sk-detail__support-img" />}
                   <div className="sk-detail__support-main">
@@ -599,16 +826,24 @@ function SkillsPage() {
                         className="sk-detail__slider"
                         min={MIN_LEVEL}
                         max={MAX_LEVEL}
-                        value={sup.level}
+                        value={supManual}
                         onChange={(v) => setSupportLevel(focus.group, focus.index, i, v)}
                       />
                       <InputNumber
                         size="small"
                         min={MIN_LEVEL}
                         max={MAX_LEVEL}
-                        value={sup.level}
+                        value={supManual}
                         onChange={(v) => setSupportLevel(focus.group, focus.index, i, v || MIN_LEVEL)}
                       />
+                      {supBonus !== 0 && (
+                        <span
+                          className={`sk-detail__manual-bonus ${supBonus > 0 ? 'sk-detail__manual-bonus--pos' : 'sk-detail__manual-bonus--neg'}`}
+                        >
+                          {formatMessage({ id: 'skills.manualLevel' })} {supManual} (
+                          {supBonus > 0 ? `+${supBonus}` : supBonus})
+                        </span>
+                      )}
                       <Button size="small" onClick={() => removeSupport(focus.group, focus.index, i)}>
                         {formatMessage({ id: 'skills.removeSupport' })}
                       </Button>
@@ -616,7 +851,7 @@ function SkillsPage() {
                   </div>
                 </div>
               ) : null
-            )}
+            })}
           </div>
         )}
       </div>
