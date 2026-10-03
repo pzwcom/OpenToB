@@ -470,13 +470,18 @@
   }
 
   &__inv-card-affixes {
-    display: flex;
+    display: none;
     flex-wrap: wrap;
     gap: 4px;
     flex: 1;
     font-size: 11px;
     color: var(--text-400);
     line-height: 1.5;
+  }
+
+  &__inv-card:hover &__inv-card-affixes,
+  &__inv-card:focus-within &__inv-card-affixes {
+    display: flex;
   }
 
   &__inv-card-affix {

@@ -487,6 +487,62 @@
   color: #e5e7eb;
 }
 
+.sk-detail__minion-skills {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sk-detail__minion-skill-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 6px;
+}
+
+.sk-detail__minion-skill {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #18181b;
+  border: 1px solid #28282c;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.sk-detail__minion-skill-img {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.sk-detail__minion-skill-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e5e7eb;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.sk-detail__minion-skill-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sk-detail__minion-skill-tags {
+  font-size: 11px;
+  color: #60a5fa;
+  line-height: 1.4;
+}
+
+.sk-detail__minion-skill-intro {
+  font-size: 11px;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+
 /* ===== 模组化技能词缀配置 ===== */
 .sk-detail__modular {
   display: flex;

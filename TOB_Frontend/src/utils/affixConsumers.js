@@ -87,6 +87,150 @@ export const AFFIX_CONSUMERS = [
     label: 'affixStats.maxMana',
     test: consumesMaxManaAffix,
   },
+  // ===== L1 防具传奇装备词缀：纯数值展示类（无独立数值面板），消费判定即本表 test（单一来源），
+  // 不套用 forEachGatedClause 门控——这些是规划器语境下无条件生效的修饰类词缀（击中时/受击时等
+  // 前缀视为战斗常态），避免条件句式被保守门控挡成"未计入"。
+  {
+    key: 'curse',
+    label: 'affixStats.curse',
+    test: (text) => /诅咒/.test(text),
+  },
+  {
+    key: 'resistCap',
+    label: 'affixStats.resistCap',
+    test: (text) => /(火焰|火|冰冷|冰霜|冰|闪电|雷|腐蚀|侵蚀|元素|全元素)抗性上限/.test(text),
+  },
+  {
+    key: 'skillArea',
+    label: 'affixStats.skillArea',
+    test: (text) => /技能范围/.test(text) && !/诅咒/.test(text),
+  },
+  {
+    key: 'blessDuration',
+    label: 'affixStats.blessDuration',
+    test: (text) => /祝福持续时间/.test(text),
+  },
+  {
+    key: 'injuryBuffer',
+    label: 'affixStats.injuryBuffer',
+    test: (text) => /受伤缓冲/.test(text),
+  },
+  {
+    key: 'ailmentChance',
+    label: 'affixStats.ailmentChance',
+    test: (text) => /几率/.test(text) && /(点燃|创伤|致盲|瘫痪|减速|避免伤害|双倍伤害)/.test(text),
+  },
+  {
+    key: 'ailmentEffect',
+    label: 'affixStats.ailmentEffect',
+    test: (text) =>
+      /(震慑效果|麻痹效果|麻痹持续时间|点燃上限|冰结值上限|额外施加\d+层麻痹|额外造成\d+层点燃|控制类状态效果|初始加剧值|减速效果|恶化持续时间|凋零持续时间|附加致盲)/.test(
+        text
+      ),
+  },
+  {
+    key: 'spellBurst',
+    label: 'affixStats.spellBurst',
+    test: (text) => /法术迸发(充能速度|上限)/.test(text),
+  },
+  {
+    key: 'regen',
+    label: 'affixStats.regen',
+    test: (text) => /(每秒自然回复|每秒回复\d+%?生命|每秒回复\d+%?魔力|自然回复速度)/.test(text),
+  },
+  {
+    key: 'moveSpeedFixed',
+    label: 'affixStats.moveSpeedFixed',
+    test: (text) => /移动速度固定为基础值/.test(text),
+  },
+  {
+    key: 'defenseValue',
+    label: 'affixStats.defenseValue',
+    test: (text) => /防御值/.test(text),
+  },
+  {
+    key: 'blockPct',
+    label: 'affixStats.blockPct',
+    test: (text) => /格挡比例/.test(text),
+  },
+  {
+    key: 'evasionCap',
+    label: 'affixStats.evasionCap',
+    test: (text) => /闪避上限/.test(text),
+  },
+  {
+    key: 'size',
+    label: 'affixStats.size',
+    test: (text) => /体型/.test(text),
+  },
+  {
+    key: 'cooldownRecovery',
+    label: 'affixStats.cooldownRecovery',
+    test: (text) => /冷却回复速度/.test(text),
+  },
+  {
+    key: 'recovery',
+    label: 'affixStats.recovery',
+    test: (text) => /回复技能/.test(text),
+  },
+  {
+    key: 'bounce',
+    label: 'affixStats.bounce',
+    test: (text) => /弹射次数/.test(text),
+  },
+  {
+    key: 'ignoreRes',
+    label: 'affixStats.ignoreRes',
+    test: (text) => /无视.*抗性/.test(text),
+  },
+  {
+    key: 'knockback',
+    label: 'affixStats.knockback',
+    test: (text) => /击退/.test(text),
+  },
+  {
+    key: 'minionShield',
+    label: 'affixStats.minionShield',
+    test: (text) => /召唤物附加.*护盾/.test(text),
+  },
+  {
+    key: 'shieldSource',
+    label: 'affixStats.shieldSource',
+    test: (text) => /附加\d+%[^，,;；。]*护盾/.test(text),
+  },
+  {
+    key: 'blessGain',
+    label: 'affixStats.blessGain',
+    test: (text) => /几率获得.*祝福/.test(text),
+  },
+  {
+    key: 'resPenConvert',
+    label: 'affixStats.resPenConvert',
+    test: (text) => /每[+-]?\d+%[^，,;；。]*抗性[^。]*穿透/.test(text),
+  },
+  {
+    key: 'blessBuff',
+    label: 'affixStats.blessBuff',
+    test: (text) => /祝福时，拥有/.test(text),
+  },
+  {
+    // 生命状态定义类：`非生命健康时，视为处于生命濒危状态`（改变低血判定的机制词缀，无独立数值面板）
+    key: 'lowLifeStatus',
+    label: 'affixStats.lowLifeStatus',
+    test: (text) => /视为处于生命濒危状态/.test(text),
+  },
+  {
+    // 护甲减伤穿透：`如果最近消耗了N%以上最大生命，攻击技能+N%护甲减伤穿透`（机制类，无独立数值面板；召唤物穿透归 minion 消费者）
+    key: 'armorPen',
+    label: 'affixStats.armorPen',
+    test: (text) => /护甲减伤穿透/.test(text) && !/召唤物/.test(text),
+  },
+  {
+    // 魔灵初始生长值：`如果最近移动了超过N米，魔灵+N初始生长值`（魔灵面板生长值基数，无独立数值面板）
+    key: 'minionGrowthBase',
+    label: 'affixStats.minionGrowthBase',
+    test: (text) => /初始生长值/.test(text),
+  },
 ]
 
 // 命中文本的第一个消费者；无命中返回 null。

@@ -3,28 +3,31 @@ import { t } from '../locales/index.js'
 import { saveStore } from './saveStore.js'
 import { uuidv4 } from './uuid.js'
 import { normalizeTalentType } from '../data/divinityData.js'
-import { normalizeStates, applyBlessingCaps } from '../utils/combatStates.js'
+import { normalizeStates, applyBlessingCaps, applyTetherCap, applyWarmBreezeCap } from '../utils/combatStates.js'
 import {
   aggregateDivinityAffixes,
   aggregateEquipmentAffixes,
+  aggregateHeroTraitAffixes,
   aggregateMemoryAffixes,
   aggregatePactAffixes,
   aggregateSkillAffixes,
   aggregateTalentAffixes,
   collectDivinityAffixTexts,
   collectEquipmentAffixTexts,
+  collectHeroTraitAffixTexts,
   collectMemoryAffixTexts,
   collectPactAffixTexts,
   collectSkillAffixTexts,
   collectTalentAffixTexts,
   computeBlessingCaps,
+  computeWarmBreezeCap,
 } from '../utils/affixAggregation.js'
 import {
   computeDamage,
   computeDefense,
   unconsumedAffixes,
 } from '../utils/damageEngine.js'
-import { aggregateMinionAffixStats } from '../utils/minionAffixStats.js'
+import { aggregateMinionAffixStats, computeTetherCap } from '../utils/minionAffixStats.js'
 import { collectSkillLevelAffixes } from '../utils/skillLevelBonus.js'
 import { aggregateCharacterStats } from '../utils/characterStats.js'
 import { aggregateSurvivalStats } from '../utils/survivalStats.js'
@@ -400,14 +403,14 @@ function computeStats(build) {
         continue
       }
       const statMatch = effect.match(
-        /([+-]?\d+(?:\.\d+)?)\s*%\s*(Strength|Dexterity|Intelligence|力量|敏捷|智力)/i
+        /([+-]?\d+(?:\.\d+)?)\s*%\s*(Strength|Dexterity|Intelligence|力量|敏捷|智慧|智力)/i
       )
       if (statMatch) {
         const sv = parseFloat(statMatch[1]) || 0
         const label = statMatch[2].toLowerCase()
         if (/strength|力量/.test(label)) str += Math.round((str * sv) / 100)
         else if (/dexterity|敏捷/.test(label)) dex += Math.round((dex * sv) / 100)
-        else if (/intelligence|智力/.test(label)) int_ += Math.round((int_ * sv) / 100)
+        else if (/intelligence|智慧|智力/.test(label)) int_ += Math.round((int_ * sv) / 100)
         continue
       }
       const critMatch = effect.match(
@@ -593,11 +596,27 @@ class BuildStore {
     return computeBlessingCaps(this.build)
   }
 
+  // 纽带层数上限：基础 3 + 各模块「+N纽带层数上限」词缀（供 CombatStatePanel 滑块上限覆盖）
+  get tetherCap() {
+    return computeTetherCap(this.build)
+  }
+
+  // 暖风满层层数：守望的暖风特性满层（基础 10，供 CombatStatePanel 开关满层值覆盖）
+  get warmBreezeCap() {
+    return computeWarmBreezeCap()
+  }
+
   get engineStats() {
     const cfg = this.build.configuration || {}
     const ctx = {
       build: this.build,
-      states: applyBlessingCaps(this.build.configuration, computeBlessingCaps(this.build)),
+      states: applyWarmBreezeCap(
+        applyTetherCap(
+          applyBlessingCaps(this.build.configuration, computeBlessingCaps(this.build)),
+          computeTetherCap(this.build)
+        ),
+        this.warmBreezeCap
+      ),
       affixTexts: [
         ...collectDivinityAffixTexts(this.build),
         ...collectTalentAffixTexts(this.build),
@@ -605,6 +624,7 @@ class BuildStore {
         ...collectMemoryAffixTexts(this.build),
         ...collectPactAffixTexts(this.build),
         ...collectSkillAffixTexts(this.build),
+        ...collectHeroTraitAffixTexts(this.build),
       ],
       config: {
         enemyLevel: cfg.enemyLevel,
@@ -647,6 +667,10 @@ class BuildStore {
     return aggregateSkillAffixes(this.build)
   }
 
+  get heroTraitAffixStats() {
+    return aggregateHeroTraitAffixes(this.build)
+  }
+
   // 魔灵技能相关词缀聚合（暴击/穿透/魔灵之源/数量上限等），供技能计算 tab 展示
   get minionAffixStats() {
     return aggregateMinionAffixStats(this.build)
@@ -677,9 +701,16 @@ class BuildStore {
       memory: collectMemoryAffixTexts(this.build),
       pact: collectPactAffixTexts(this.build),
       skill: collectSkillAffixTexts(this.build),
+      hero: collectHeroTraitAffixTexts(this.build),
     }
     // 战斗状态用于条件词缀门控（与计算端一致），保证「统计已计入 ⇔ 计算真实计入」。
-    const states = normalizeStates(this.build && this.build.configuration)
+    const states = applyWarmBreezeCap(
+      applyTetherCap(
+        this.build && this.build.configuration,
+        computeTetherCap(this.build)
+      ),
+      this.warmBreezeCap
+    )
     const groups = []
     for (const [source, texts] of Object.entries(sources)) {
       if (!Array.isArray(texts) || texts.length === 0) continue

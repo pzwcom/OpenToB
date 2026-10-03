@@ -9,12 +9,12 @@ import {
 import { forEachGatedClause } from './conditionClauses.js'
 import { normalizeStates } from './combatStates.js'
 import {
-  MOVE_SPEED_RE,
   SKILL_DURATION_RE,
   SEAL_COMP_RE,
   MECH_CAP_RE,
   MINION_CAP_RE,
   PER_SKILL_RE,
+  moveSpeedValue,
 } from './characterAffix.js'
 
 // 角色基础属性之外的杂项角色统计：对 build 内 6 个模块（神格石板/天赋树/装备/英雄追忆/契灵/技能）的
@@ -46,21 +46,21 @@ export function aggregateCharacterStats(build) {
     const texts = mod.collect(build)
     for (const raw of texts || []) {
       forEachGatedClause(raw, states, (text) => {
-        let m = text.match(MOVE_SPEED_RE)
-        if (m) acc.moveSpeed += parseFloat(m[1]) || 0
+        const mv = moveSpeedValue(text)
+        if (mv != null) acc.moveSpeed += mv
 
-        m = text.match(SKILL_DURATION_RE)
+        const m = text.match(SKILL_DURATION_RE)
         if (m) acc.skillDuration += parseFloat(m[1]) || 0
 
-        m = text.match(SEAL_COMP_RE)
-        if (m) acc.sealCompensation += parseFloat(m[1]) || 0
+        const m2 = text.match(SEAL_COMP_RE)
+        if (m2) acc.sealCompensation += parseFloat(m2[1]) || 0
 
         if (!PER_SKILL_RE.test(text)) {
-          m = text.match(MECH_CAP_RE)
-          if (m) acc.mechCap += parseInt(m[1], 10) || 0
+          const mc = text.match(MECH_CAP_RE)
+          if (mc) acc.mechCap += parseInt(mc[1], 10) || 0
 
-          m = text.match(MINION_CAP_RE)
-          if (m) acc.minionCap += parseInt(m[1], 10) || 0
+          const mn = text.match(MINION_CAP_RE)
+          if (mn) acc.minionCap += parseInt(mn[1], 10) || 0
         }
       })
     }

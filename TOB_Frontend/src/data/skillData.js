@@ -38,6 +38,7 @@ function toSkill(key, family, d) {
     imgPath: d.图片地址 || '',
     levels: Array.isArray(d.等级词缀) ? d.等级词缀 : [],
     affixes: Array.isArray(d.词缀) ? d.词缀 : [],
+    summonSkills: Array.isArray(d.召唤物技能) ? d.召唤物技能 : [],
     minion: d['minion属性'] && typeof d['minion属性'] === 'object' ? d['minion属性'] : null,
   }
 }

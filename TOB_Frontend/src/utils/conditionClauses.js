@@ -2,6 +2,8 @@
 // 计算端（computeShield/computeVitalsMax/各 aggregate*Stats）与统计端谓词（consumes*Affix）
 // 共用 splitLeadingCondition / forEachGatedClause，保证「统计已计入 ⇔ 计算真实计入」一致。
 
+import { normalizeAffixNumbers } from './affixText.js'
+
 // 魔灵面板条件规则：命中映射规则返回开关结果 + 条件之后剩余文本。
 const ailmentActive = (s) =>
   !!s.enemyIsIgnited ||
@@ -18,7 +20,6 @@ const CONDITION_RULES = [
   { re: /非生命濒危时/, test: (s) => !s.isLowLife },
   { re: /移动时/, test: (s) => !!s.isMoving },
   { re: /站立时|站定时/, test: (s) => !!s.isStationary },
-  { re: /持盾时|格挡时/, test: (s) => !!s.isBlocking },
   { re: /拥有充能|充能时/, test: (s) => !!s.hasCharges },
   { re: /战斗中|处于战斗/, test: (s) => !!s.isInCombat },
   { re: /对有异常状态的敌人|敌人有异常状态|敌人处于异常状态/, test: ailmentActive },
@@ -33,10 +34,21 @@ const CONDITION_RULES = [
   { re: /对远处的敌人/, test: (s) => !!s.enemyIsFar },
   { re: /近期击杀/, test: (s) => !!s.recentlyKilled },
   { re: /(?:召唤物|被辅助技能召唤的召唤物)?存在时/, test: (s) => (s.minionCount || 0) > 0 },
+  { re: /拥有纽带时/, test: (s) => (s.tetherStacks || 0) > 0 },
+  { re: /纽带达到上限时/, test: (s) => (s.tetherStacks || 0) >= (s.tetherCap || 3) },
+  { re: /每拥有1层纽带/, test: (s) => (s.tetherStacks || 0) > 0 },
+  // L3 护盾/祝福状态条件：满护盾、聚能祝福达到上限（祝福开关存 0（无）/正数（满层），与纽带一致）。
+  // 注意：非满护盾时 须在 满护盾时 之前，且 满护盾时 用负向 lookbehind 排除「非满护盾时」（其内包含 满护盾时 子串）。
+  { re: /非满护盾时/, test: (s) => !s.fullShield },
+  { re: /(?<!非)满护盾时/, test: (s) => !!s.fullShield },
+  { re: /聚能祝福达到上限时/, test: (s) => (s.blessFocus || 0) > 0 },
   {
     re: /周围只有\s*(\d+)\s*个敌人/,
     test: (s, m) => (s.enemyCount || 0) === Number(m[1]),
   },
+  // 周围没有敌人：enemyCount === 0（「周围没有敌人时」移动速度/几率避免伤害等）。
+  // 必须含「时」，否则 rest 会残留「时」导致 forEachGatedClause 把门控重置为放行。
+  { re: /周围没有敌人时/, test: (s) => (s.enemyCount || 0) === 0 },
   { re: /周围(?:有|存在)?敌人/, test: (s) => (s.enemyCount || 0) > 0 || !!s.isInCombat },
 ]
 
@@ -75,7 +87,9 @@ export function forEachGatedClause(text, states, cb) {
     const clauses = seg.split(/[，,]/)
     let pendingGate = true
     for (const clauseRaw of clauses) {
-      const clause = clauseRaw.trim()
+      // 数值括号归一（`(-20–-15)%` → `-20–-15%`），与 classifyAffixText / fallback 同口径，
+      // 保证各叶子谓词（consumesSurvivalClause 等）能命中带括号负值词缀
+      const clause = normalizeAffixNumbers(clauseRaw).trim()
       if (!clause) continue
       const { gated, rest } = splitLeadingCondition(clause, states)
       if (gated !== null) pendingGate = gated

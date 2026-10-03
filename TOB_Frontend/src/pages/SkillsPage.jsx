@@ -53,6 +53,12 @@ const FAMILY_SKILLS = {
   [SKILL_FAMILY.modular]: modularSkills,
 }
 
+// 被动技能（召唤类）声明的召唤物技能名集合：这些技能是魔灵/召唤物使用的，
+// 不能配置到主动技能槽，仅作为魔灵属性下方的展示信息
+const MINION_SKILL_NAMES = new Set(
+  passiveSkills.flatMap((s) => (Array.isArray(s.summonSkills) ? s.summonSkills : []))
+)
+
 // 魔灵「基础属性」字段 → i18n key（展示用）
 const MINION_BASE_FIELDS = [
   ['mana', 'skills.minion.mana'],
@@ -487,6 +493,7 @@ function SkillsPage() {
       label: formatMessage({ id: FAMILY_LABEL_KEYS[family] }),
       items: FAMILY_SKILLS[family].filter((s) => {
         if (usedSupportNames.has(s.name)) return false
+        if (family === SKILL_FAMILY.active && MINION_SKILL_NAMES.has(s.name)) return false
         if (
           family === SKILL_FAMILY.magnificent ||
           family === SKILL_FAMILY.sublime
@@ -740,6 +747,42 @@ function SkillsPage() {
                 )
               })}
             </div>
+            {levelSkill.summonSkills && levelSkill.summonSkills.length > 0 && (
+              <div className="sk-detail__minion-skills">
+                <div className="sk-detail__sub-title">
+                  {formatMessage({ id: 'skills.minion.summonSkills' })}
+                </div>
+                <div className="sk-detail__minion-skill-list">
+                  {levelSkill.summonSkills.map((name) => {
+                    const minionSkill = skillByFamilyName(SKILL_FAMILY.active, name)
+                    return (
+                      <div key={name} className="sk-detail__minion-skill">
+                        {minionSkill && minionSkill.imgPath && (
+                          <img
+                            src={minionSkill.imgPath}
+                            alt={name}
+                            className="sk-detail__minion-skill-img"
+                          />
+                        )}
+                        <span className="sk-detail__minion-skill-name">{name}</span>
+                        <span className="sk-detail__minion-skill-info">
+                          {minionSkill && minionSkill.tags && minionSkill.tags.length > 0 && (
+                            <span className="sk-detail__minion-skill-tags">
+                              {minionSkill.tags.join(' · ')}
+                            </span>
+                          )}
+                          {minionSkill && minionSkill.intro && (
+                            <span className="sk-detail__minion-skill-intro">
+                              {cleanAffixText(minionSkill.intro)}
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -779,6 +822,7 @@ function SkillsPage() {
               {formatMessage({ id: 'skills.supports' })}
             </div>
             {slot.supports.map((sup, i) => {
+              if (!sup) return null
               const supSkill = sup.family ? skillByFamilyName(sup.family, sup.name) : null
               const supTags =
                 Array.isArray(sup.tags) && sup.tags.length > 0

@@ -10,6 +10,7 @@ const SOURCE_KEYS = {
   memory: 'affixStats.source.memory',
   pact: 'affixStats.source.pact',
   skill: 'affixStats.source.skill',
+  hero: 'affixStats.source.hero',
 }
 
 function Chevron({ open }) {

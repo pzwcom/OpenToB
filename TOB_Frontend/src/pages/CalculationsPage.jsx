@@ -173,6 +173,18 @@ function SurvivalTab({ stats, survStats, formatMessage }) {
           suffix="s"
           className="calc__row-value--blue"
         />
+        <StatRow
+          label={formatMessage({ id: 'stat.attackBlock' })}
+          value={survStats.attackBlock}
+          suffix="%"
+          className="calc__row-value--orange"
+        />
+        <StatRow
+          label={formatMessage({ id: 'stat.spellBlock' })}
+          value={survStats.spellBlock}
+          suffix="%"
+          className="calc__row-value--purple"
+        />
       </div>
     </div>
   )
@@ -203,6 +215,10 @@ function AffixStatsTab() {
     {
       title: 'affixStats.skillAffixTitle',
       stats: buildStore.skillAffixStats,
+    },
+    {
+      title: 'affixStats.heroTraitAffixTitle',
+      stats: buildStore.heroTraitAffixStats,
     },
   ]
 

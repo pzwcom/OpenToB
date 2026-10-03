@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
-import { Drawer, Empty, Select } from 'antd'
+import { Drawer, Empty, Select, Slider } from 'antd'
 import { buildStore } from '../../stores/buildStore.js'
 import {
   SKILL_FAMILY,
@@ -16,6 +16,7 @@ const MODULE_LABEL_IDS = {
   memory: 'affixStats.source.memory',
   pact: 'affixStats.source.pact',
   skill: 'affixStats.source.skill',
+  hero: 'affixStats.source.hero',
 }
 
 const FAMILY_LABEL_IDS = {
@@ -50,6 +51,11 @@ const DETAIL_META = {
   countCap: { label: 'calculations.skill.detail.countCap', pct: false, int: true },
   atkSpeed: { label: 'calculations.skill.detail.atkSpeed', pct: true },
   castSpeed: { label: 'calculations.skill.detail.castSpeed', pct: true },
+  tetherGainSpeed: { label: 'calculations.skill.detail.tetherGainSpeed', pct: true },
+  tetherHaveMore: { label: 'calculations.skill.detail.tetherHaveMore', pct: true },
+  tetherAtCapMore: { label: 'calculations.skill.detail.tetherAtCapMore', pct: true },
+  tetherPerCrit: { label: 'calculations.skill.detail.tetherPerCrit', pct: true },
+  tetherPerMore: { label: 'calculations.skill.detail.tetherPerMore', pct: true },
 }
 
 function fmt(n) {
@@ -157,6 +163,81 @@ function buildRows(stats, branch, formatMessage) {
     }
   )
 
+  // 纽带：当前层数/上限（层数来自战斗状态滑块，上限 = 基础 3 + 各模块「+N纽带层数上限」词缀）
+  rows.push({
+    key: 'tetherLayer',
+    label: formatMessage({ id: 'calculations.skill.tetherLayer' }),
+    value: formatMessage(
+      { id: 'calculations.skill.tetherLayerValue' },
+      { stacks: stats.tetherStacks, cap: stats.tetherCap }
+    ),
+    suffix: '',
+    raw: true,
+    hint: stats.tetherGainable
+      ? formatMessage({ id: 'calculations.skill.tetherLayerHint' })
+      : null,
+    detailKeys: [],
+  })
+
+  // 纽带词缀行：获得速度 / 拥有时额外 / 达到上限时额外 / 每层暴击值 / 每层额外伤害
+  const tetherRows = [
+    {
+      key: 'tetherGainSpeed',
+      label: formatMessage({ id: 'calculations.skill.tetherGainSpeed' }),
+      value: stats.tetherGainSpeed,
+      suffix: '%',
+      detailKeys: ['tetherGainSpeed'],
+    },
+    {
+      key: 'tetherHaveMore',
+      label: formatMessage({ id: 'calculations.skill.tetherHaveMore' }),
+      value: stats.tetherHaveMore,
+      suffix: '%',
+      detailKeys: ['tetherHaveMore'],
+    },
+    {
+      key: 'tetherAtCapMore',
+      label: formatMessage({ id: 'calculations.skill.tetherAtCapMore' }),
+      value: stats.tetherAtCapMore,
+      suffix: '%',
+      detailKeys: ['tetherAtCapMore'],
+    },
+    {
+      key: 'tetherPerCrit',
+      label: formatMessage({ id: 'calculations.skill.tetherPerCrit' }),
+      value: stats.tetherPerCrit,
+      suffix: '%',
+      detailKeys: ['tetherPerCrit'],
+      hint:
+        stats.tetherStacks > 0
+          ? formatMessage(
+              { id: 'calculations.skill.tetherPerCritHint' },
+              { stacks: stats.tetherStacks }
+            )
+          : null,
+    },
+    {
+      key: 'tetherPerMore',
+      label: formatMessage({ id: 'calculations.skill.tetherPerMore' }),
+      value: stats.tetherPerMore,
+      suffix: '%',
+      detailKeys: ['tetherPerMore'],
+      hint:
+        stats.tetherStacks > 0
+          ? formatMessage(
+              { id: 'calculations.skill.tetherPerMoreHint' },
+              { stacks: stats.tetherStacks }
+            )
+          : null,
+    },
+  ]
+  for (const r of tetherRows) {
+    if (r.detailKeys.every((dk) => !(stats.detail[dk] || []).length)) {
+      if (r.value <= 0) continue
+    }
+    rows.push(r)
+  }
+
   rows.push({
     key: 'countCap',
     label: formatMessage({ id: 'calculations.skill.countCap' }),
@@ -251,6 +332,7 @@ function DetailDrawer({ row, onClose, stats, formatMessage }) {
 }
 
 // 魔灵技能面板：暴击/穿透/魔灵之源等属性行（词缀来自全部 6 个模块）
+// 顶部提供 召唤物数量 / 魔灵生长值 滑块（随本技能计算配置，存 configuration.minionCount/growthValue）
 function MinionPanel({ minion, stats, onOpen, formatMessage }) {
   const branch = SPIRIT_BRANCH[minion.name] || 'spell'
   const rows = buildRows(stats, branch, formatMessage)
@@ -258,6 +340,9 @@ function MinionPanel({ minion, stats, onOpen, formatMessage }) {
     id:
       branch === 'attack' ? 'calculations.skill.branch.attack' : 'calculations.skill.branch.spell',
   })
+  const cfg = buildStore.build.configuration || {}
+  const minionCount = cfg.minionCount || 0
+  const growthValue = cfg.growthValue || 0
   return (
     <div className="calc__panel">
       <div className="calc__panel-head">
@@ -268,12 +353,40 @@ function MinionPanel({ minion, stats, onOpen, formatMessage }) {
         <span className="calc__panel-count">{branchLabel}</span>
       </div>
       <div className="calc__panel-body skill-calc__rows">
+        <div className="skill-calc__input-row">
+          <span className="skill-calc__input-label">
+            {formatMessage({ id: 'state.minionCount' })}
+          </span>
+          <Slider
+            className="skill-calc__slider"
+            min={0}
+            max={20}
+            step={1}
+            value={minionCount}
+            onChange={(v) => buildStore.updateConfiguration({ minionCount: v })}
+          />
+          <span className="skill-calc__input-value">{minionCount}</span>
+        </div>
+        <div className="skill-calc__input-row">
+          <span className="skill-calc__input-label">
+            {formatMessage({ id: 'state.growthValue' })}
+          </span>
+          <Slider
+            className="skill-calc__slider"
+            min={0}
+            max={5000}
+            step={50}
+            value={growthValue}
+            onChange={(v) => buildStore.updateConfiguration({ growthValue: v })}
+          />
+          <span className="skill-calc__input-value">{growthValue}</span>
+        </div>
         {rows.map((r) => (
           <button key={r.key} type="button" className="skill-calc__row" onClick={() => onOpen(r)}>
             <span className="skill-calc__row-text">{r.label}</span>
             {r.hint && <span className="skill-calc__row-hint">{r.hint}</span>}
             <span className="skill-calc__row-value">
-              {r.int ? r.value : fmt(r.value)}
+              {r.raw ? r.value : r.int ? r.value : fmt(r.value)}
               {r.suffix}
             </span>
           </button>

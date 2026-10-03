@@ -1,12 +1,14 @@
 import {
   collectDivinityAffixTexts,
   collectEquipmentAffixTexts,
+  collectHeroTraitAffixTexts,
   collectMemoryAffixTexts,
   collectPactAffixTexts,
   collectSkillAffixTexts,
   collectTalentAffixTexts,
+  computeWarmBreezeCap,
 } from './affixAggregation.js'
-import { normalizeStates } from './combatStates.js'
+import { applyTetherCap, applyWarmBreezeCap } from './combatStates.js'
 import { forEachGatedClause } from './conditionClauses.js'
 import {
   CRIT_DMG_RE,
@@ -24,6 +26,8 @@ import {
   CAP_GLOBAL_RE,
   CAP_SKILL_RE,
   CAP_FIXED_RE,
+  TETHER_CAP_RE,
+  extractTether,
 } from './minionAffix.js'
 
 // 魔灵技能相关词缀统计：对 build 内 6 个模块（神格石板/天赋树/装备/英雄追忆/契灵/技能）的
@@ -37,6 +41,7 @@ const MODULES = [
   { key: 'memory', collect: collectMemoryAffixTexts },
   { key: 'pact', collect: collectPactAffixTexts },
   { key: 'skill', collect: collectSkillAffixTexts },
+  { key: 'hero', collect: collectHeroTraitAffixTexts },
 ]
 
 // 魔灵面板词缀的解析正则统一在 minionAffix.js（与 affixConsumers 消费判定同源）
@@ -67,6 +72,15 @@ function emptyAcc() {
     countCapFixed: null,
     atkSpeed: 0,
     castSpeed: 0,
+    // 纽带：当前层数（状态）、上限（3 + 上限词缀）、获得速度、各条件/每层加成合计
+    tetherStacks: 0,
+    tetherCap: 3,
+    tetherGainable: false,
+    tetherGainSpeed: 0,
+    tetherHaveMore: 0,
+    tetherAtCapMore: 0,
+    tetherPerCrit: 0,
+    tetherPerMore: 0,
     detail: {
       critDamage: [],
       critValueFlat: [],
@@ -81,14 +95,51 @@ function emptyAcc() {
       countCap: [],
       atkSpeed: [],
       castSpeed: [],
+      tetherGainSpeed: [],
+      tetherHaveMore: [],
+      tetherAtCapMore: [],
+      tetherPerCrit: [],
+      tetherPerMore: [],
     },
   }
+}
+
+// 纽带层数上限：基础 3 + 各模块「+N纽带层数上限」词缀。神格石板带「神格生效上限：1」时同类只计一次。
+export function computeTetherCap(build) {
+  const BASE = 3
+  let cap = BASE
+  const seenDiv = new Set()
+  const apply = (text) => {
+    const m = String(text || '').match(TETHER_CAP_RE)
+    if (m) cap += parseInt(m[1].replace(/\s/g, ''), 10) || 0
+  }
+  for (const mod of MODULES) {
+    const texts = mod.collect(build)
+    for (const raw of texts || []) {
+      const t = String(raw || '')
+      const hasCapNote = /神格生效上限/.test(t)
+      const key = t.replace(/（神格生效上限：1）/, '')
+      if (mod.key === 'divinity' && hasCapNote) {
+        if (seenDiv.has(key)) continue
+        seenDiv.add(key)
+      }
+      apply(t)
+    }
+  }
+  return cap
 }
 
 export function aggregateMinionAffixStats(build) {
   const acc = emptyAcc()
   const { detail } = acc
-  const states = normalizeStates(build && build.configuration)
+  const tetherCap = computeTetherCap(build)
+  const states = applyWarmBreezeCap(
+    applyTetherCap(build && build.configuration, tetherCap),
+    computeWarmBreezeCap()
+  )
+  acc.tetherCap = tetherCap
+  acc.tetherStacks = states.tetherStacks
+  acc.warmBreezeStacks = states.warmBreezeStacks
 
   const add = (key, module, segment, value) => {
     acc[key] += value
@@ -100,10 +151,45 @@ export function aggregateMinionAffixStats(build) {
     detail[PEN_DETAIL_KEY[el]].push({ module, text: segment, value })
   }
 
+  // 纽带词缀预扫描：命中（含条件门控）即按当前层数折算计入，并从通用循环剔除（避免重复计入）。
+  // 与 consumesTetherText / extractTether 同源，保证「统计已计入⇔计算真实计入」。
+  const TETHER_ACC_KEY = {
+    gainSpeed: 'tetherGainSpeed',
+    haveMore: 'tetherHaveMore',
+    atCapMore: 'tetherAtCapMore',
+    perCrit: 'tetherPerCrit',
+    perMore: 'tetherPerMore',
+  }
+  const processTether = (raw, modKey) => {
+    const { contributions, rest } = extractTether(raw, states)
+    for (const c of contributions) {
+      if (c.kind === 'gainable') {
+        acc.tetherGainable = true
+      } else {
+        const dk = TETHER_ACC_KEY[c.kind]
+        if (dk) {
+          acc[dk] += c.value
+          detail[dk].push({ module: modKey, text: c.segment, value: c.value })
+        }
+      }
+    }
+    return rest
+  }
+
   for (const mod of MODULES) {
     const texts = mod.collect(build)
+    // 神格石板词缀带「神格生效上限：1」时，同类文本只生效一次（与 computeTetherCap 去重口径一致）
+    const seenDiv = new Set()
     for (const raw of texts || []) {
-      forEachGatedClause(raw, states, (text) => {
+      const t = String(raw || '')
+      if (mod.key === 'divinity' && /神格生效上限/.test(t)) {
+        const key = t.replace(/（神格生效上限：1）/g, '')
+        if (seenDiv.has(key)) continue
+        seenDiv.add(key)
+      }
+      const rest = processTether(raw, mod.key)
+      if (!rest) continue
+      forEachGatedClause(rest, states, (text) => {
         let m = text.match(CRIT_DMG_RE)
         if (m) add('critDamage', mod.key, text, matchValue(m))
 

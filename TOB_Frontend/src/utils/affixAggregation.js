@@ -1,6 +1,7 @@
-import { cleanAffixText } from './affixText.js'
+import { cleanAffixText, normalizeAffixNumbers } from './affixText.js'
 import { AFFIX_CONSUMERS, consumerOf, parseBlessingCapMatches, BLESSING_KEY_BY_NAME } from './affixConsumers.js'
 import { normalizeStates } from './combatStates.js'
+import { unconsumedAffixes } from './damageEngine.js'
 import { affixDisplayText } from './affixRange.js'
 import {
   CORE_BOOST_FACTOR,
@@ -21,6 +22,7 @@ import {
 } from './talentTree.js'
 import { modularAffixPool, skillByFamilyName } from '../data/skillData.js'
 import { getShapeCells, GOD_NAMES } from '../data/divinityData.js'
+import { collectHeroTraitAffixTexts } from './heroTraitAffix.js'
 
 const MORE_RE = /(?:额外|additional)/i
 const VALUE_RE = /([+-]?\d+(?:\.\d+)?)\s*%/
@@ -45,32 +47,47 @@ export function aggregateAffixTexts(affixTexts, states) {
   const consumerMaps = new Map(AFFIX_CONSUMERS.map((c) => [c.key, new Map()]))
   const othersMap = new Map()
 
+  // 引擎真实未消费的词缀段：统计端与「未计入词缀」面板同源（collectEffects 规则 + fallback + 旁路消费者），
+  // 命中即不再计入 increase/more/flat/消费者 分组，只留「未计入」面板展示，避免同一词缀既计入又未计入。
+  const unconsumedSet = new Set(
+    unconsumedAffixes(affixTexts, states).map((u) => u.text)
+  )
+
   for (const raw of affixTexts) {
     const text = cleanAffixText(raw).trim()
     if (!text) continue
-    // 旁路消费者词缀：被对应模块（条件配置 / 技能计算 tab 等）计入，归入各自分组而非 others/increase
-    const consumer = consumerOf(text, states)
-    if (consumer) {
-      const m = consumerMaps.get(consumer.key)
-      m.set(text, (m.get(text) || 0) + 1)
-      continue
+    // 按段处理：引擎真实未计入的段只留「未计入」面板展示，其余段各自归类。
+    // （与 collectEffects 一致按 `;` 分段，避免整条多段文本因个别未计入段被整体跳过。）
+    const segments = text
+      .split(/[;；]/)
+      .map((s) => normalizeAffixNumbers(s).trim())
+      .filter(Boolean)
+    for (const seg of segments) {
+      if (unconsumedSet.has(seg)) continue
+      // 旁路消费者词缀：被对应模块（条件配置 / 技能计算 tab 等）计入，归入各自分组而非 others/increase
+      const consumer = consumerOf(seg, states)
+      if (consumer) {
+        const m = consumerMaps.get(consumer.key)
+        m.set(seg, (m.get(seg) || 0) + 1)
+        continue
+      }
+      if (FLAT_RE.test(seg)) {
+        flatMap.set(seg, (flatMap.get(seg) || 0) + 1)
+        continue
+      }
+      const isMore = MORE_RE.test(seg)
+      const valueMatch = seg.match(VALUE_RE)
+      const value = valueMatch ? parseFloat(valueMatch[1]) : null
+      if (value == null) {
+        othersMap.set(seg, (othersMap.get(seg) || 0) + 1)
+        continue
+      }
+      const target = isMore ? moreMap : increaseMap
+      if (!target.has(seg)) {
+        target.set(seg, { text: seg, count: 0, value })
+      }
+      target.get(seg).count += 1
     }
-    if (FLAT_RE.test(text)) {
-      flatMap.set(text, (flatMap.get(text) || 0) + 1)
-      continue
-    }
-    const isMore = MORE_RE.test(text)
-    const valueMatch = text.match(VALUE_RE)
-    const value = valueMatch ? parseFloat(valueMatch[1]) : null
-    if (value == null) {
-      othersMap.set(text, (othersMap.get(text) || 0) + 1)
-      continue
-    }
-    const target = isMore ? moreMap : increaseMap
-    if (!target.has(text)) {
-      target.set(text, { text, count: 0, value })
-    }
-    target.get(text).count += 1
   }
 
   const increase = [...increaseMap.values()].map((e) => ({
@@ -476,6 +493,16 @@ export function aggregateTalentAffixes(build) {
   return aggregateAffixTexts(collectTalentAffixTexts(build), normalizeStates(build && build.configuration))
 }
 
+// 英雄特性词缀：已选特性在其生效等级下的文本（含满级 5 解锁的人造月亮段），见 heroTraitAffix.js
+export { collectHeroTraitAffixTexts }
+
+export function aggregateHeroTraitAffixes(build) {
+  return aggregateAffixTexts(
+    collectHeroTraitAffixTexts(build),
+    normalizeStates(build && build.configuration)
+  )
+}
+
 // 收集已装备（10 槽位）词缀原始文本：基底词缀 + 词条（含侵蚀词条，用已选数值回填）。
 // 返回原始文本数组（供计算引擎 collectEffects 使用）。
 export function collectEquipmentAffixTexts(build) {
@@ -599,10 +626,10 @@ export function collectMemoryAffixTexts(build) {
 
     if (item.baseAttr) {
       const level = Number(item.enhanceLevel) || 0
-      const m = String(item.baseAttr).match(/^([+-]?\d+(?:\.\d+)?)(.*)$/)
+      const m = String(item.baseAttr).match(/^([+-]?)(\d+(?:\.\d+)?)(.*)$/)
       const scaled =
         m && level > 0
-          ? `${Math.ceil((parseFloat(m[1]) * level) / 50)}${m[2]}`
+          ? `${m[1] === '-' ? '-' : '+'}${Math.ceil((parseFloat(m[2]) * level) / 50)}${m[3]}`
           : item.baseAttr
       pushAffix(scaled, 1)
     }
@@ -727,6 +754,7 @@ export function computeBlessingCaps(build) {
     ...collectMemoryAffixTexts(build),
     ...collectPactAffixTexts(build),
     ...collectSkillAffixTexts(build),
+    ...collectHeroTraitAffixTexts(build),
   ]
 
   const apply = (text) => {
@@ -750,4 +778,10 @@ export function computeBlessingCaps(build) {
   for (const text of otherTexts) apply(text)
 
   return caps
+}
+
+// 暖风满层层数：守望的暖风特性满层 = 基础 10 层。
+// （特性「让清风吹拂/最温暖的守望」与月相词缀可提升层数上限，尚未解析，暂按基础满层计。）
+export function computeWarmBreezeCap() {
+  return 10
 }

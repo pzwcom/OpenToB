@@ -15,6 +15,7 @@ import memoryRandomData from '../assets/json/装备/英雄追忆/英雄追忆随
 import reviveAffixData from '../assets/json/装备/英雄追忆/追忆复苏词缀.json'
 import reviveMoonData from '../assets/json/装备/英雄追忆/复苏词缀（月相）.json'
 import { getTraitEffectAtLevel, parseTraitDesc, getTraitAllLevelsTooltip } from '../utils/heroTraitDesc.js'
+import { getTraitTier, memoryTraitBonusOf } from '../utils/heroTraitAffix.js'
 import { cleanAffixText } from '../utils/affixText.js'
 import {
   parseAffixRanges,
@@ -95,45 +96,9 @@ function tierColorClass(tier) {
 function scaledBaseAttrText(baseAttr, enhanceLevel) {
   const lvl = enhanceLevel || 0
   if (!baseAttr || lvl <= 0) return baseAttr || ''
-  const m = baseAttr.match(/^([+-]?\d+(?:\.\d+)?)(.*)$/)
+  const m = baseAttr.match(/^([+-]?)(\d+(?:\.\d+)?)(.*)$/)
   if (!m) return baseAttr
-  return `${Math.ceil((parseFloat(m[1]) * lvl) / 50)}${m[2]}`
-}
-
-// 某档位追忆槽已装备的追忆提供的特性等级加成：
-// 强化等级 ≥50 → +2、≥30 → +1（30/40 归 +1，50 归 +2，10/20 不加）；
-// 固有词缀含 "+2英雄特性等级"（清洗后精确匹配）→ +2；两者可叠加。
-// 45/60/75 档取对应槽位追忆；1 级特性取全部特殊追忆槽（复苏词缀生成）的追忆。
-function memoryTraitBonusOf(memorySlots, memoryInventory, tier) {
-  let items = []
-  if (tier === 1) {
-    items = (memorySlots || [])
-      .filter((s) => s.tier === 'special' && s.memoryId)
-      .map((s) => (memoryInventory || []).find((it) => it.id === s.memoryId))
-      .filter(Boolean)
-  } else {
-    const slot = (memorySlots || []).find((s) => s.tier === tier)
-    if (!slot || !slot.memoryId) return { enhance: 0, inherent: 0 }
-    const item = (memoryInventory || []).find((it) => it.id === slot.memoryId)
-    if (item) items.push(item)
-  }
-  if (items.length === 0) return { enhance: 0, inherent: 0 }
-  let enhance = 0
-  let inherent = 0
-  for (const item of items) {
-    enhance += item.enhanceLevel >= 50 ? 2 : item.enhanceLevel >= 30 ? 1 : 0
-    const inherentAffixes = Array.isArray(item.inherentAffixes)
-      ? item.inherentAffixes
-      : [item.inherentAffix]
-    if (
-      inherentAffixes
-        .filter(Boolean)
-        .some((a) => cleanAffixText(affixTextOf(a)).replace(/\s+/g, '') === '+2英雄特性等级')
-    ) {
-      inherent += 2
-    }
-  }
-  return { enhance, inherent }
+  return `${m[1] === '-' ? '-' : '+'}${Math.ceil((parseFloat(m[2]) * lvl) / 50)}${m[3]}`
 }
 
 function affixTierOf(kind, modifier) {
@@ -190,11 +155,6 @@ const EMPTY_FORM = {
   revive: '',
   inherent: [],
   random: [],
-}
-
-function getTraitTier(levelUpTime) {
-  const m = (levelUpTime || '').match(/(\d+)/)
-  return m ? parseInt(m[1], 10) : 1
 }
 
 function groupByTier(heroName) {
@@ -435,10 +395,14 @@ function HeroPage() {
               return (
                 <Tooltip
                   key={`special-${ss.sourceMemoryId}`}
-                  title={formatMessage(
-                    { id: 'hero.memorySpecialSlotHint' },
-                    { kind: ss.kind, maxRarity: ss.maxRarity }
-                  )}
+                  title={
+                    slotItem
+                      ? renderMemoryTooltip(slotItem)
+                      : formatMessage(
+                          { id: 'hero.memorySpecialSlotHint' },
+                          { kind: ss.kind, maxRarity: ss.maxRarity }
+                        )
+                  }
                 >
                   <div
                     className={`hero__mt-slot hero__mt-slot--special ${slotItem ? 'hero__mt-slot--filled' : ''} ${slotItem && slotItem.rarity ? RARITY_CLASS[slotItem.rarity] : ''}`}
@@ -460,7 +424,14 @@ function HeroPage() {
           {!isBase && (
             <Tooltip
               key={`slot-${tier}`}
-              title={formatMessage({ id: 'hero.memorySlotKind' }, { kind: TIER_MEMORY_KIND[tier] })}
+              title={
+                slotItem
+                  ? renderMemoryTooltip(slotItem)
+                  : formatMessage(
+                      { id: 'hero.memorySlotKind' },
+                      { kind: TIER_MEMORY_KIND[tier] }
+                    )
+              }
             >
               <div
                 className={`hero__mt-slot ${slotItem ? 'hero__mt-slot--filled' : ''} ${slotItem && slotItem.rarity ? RARITY_CLASS[slotItem.rarity] : ''}`}
@@ -605,6 +576,60 @@ function HeroPage() {
             {formatMessage({ id: 'hero.memoryRemoveFromInventory' })}
           </Button>
         </div>
+      </div>
+    )
+  }
+
+  // 已装备追忆的悬浮详情（复用强化等级、复苏/固有/随机词缀解析）
+  function renderMemoryTooltip(item) {
+    return (
+      <div className="hero__tooltip">
+        <div className="hero__tooltip-line">
+          <span className="hero__tooltip-name">{item.kind}</span>
+          {item.rarity && <span className="hero__inv-card-rarity">{item.rarity}</span>}
+        </div>
+        {item.baseAttr && (
+          <div className="hero__tooltip-line">
+            <span className="hero__tooltip-lv">{formatMessage({ id: 'hero.memoryBaseAttr' })}</span>
+            {scaledBaseAttrText(item.baseAttr, item.enhanceLevel)}
+          </div>
+        )}
+        {ENHANCE_NODES.includes(item.enhanceLevel) && (
+          <div className="hero__tooltip-line">
+            <span className="hero__tooltip-lv">
+              {formatMessage({ id: 'hero.memoryEnhanceLevel' })}
+            </span>
+            {item.enhanceLevel}
+          </div>
+        )}
+        {item.reviveAffix && (
+          <div className={`hero__tooltip-line ${tierColorClass(reviveTierOf(item.reviveAffix))}`}>
+            <span className="hero__tooltip-lv">{formatMessage({ id: 'hero.memoryRevive' })}</span>
+            {cleanAffixText(
+              resolveAffixText(affixTextOf(item.reviveAffix), affixValuesOf(item.reviveAffix))
+            )}
+          </div>
+        )}
+        {(Array.isArray(item.inherentAffixes) ? item.inherentAffixes : [item.inherentAffix])
+          .filter(Boolean)
+          .map((a) => (
+            <div
+              key={`in-${affixTextOf(a)}`}
+              className={`hero__tooltip-line ${tierColorClass(affixTierOf(item.kind, a))}`}
+            >
+              <span className="hero__tooltip-lv">{formatMessage({ id: 'hero.memoryInherent' })}</span>
+              {cleanAffixText(resolveAffixText(affixTextOf(a), affixValuesOf(a)))}
+            </div>
+          ))}
+        {(item.randomAffixes || []).map((a) => (
+          <div
+            key={`rd-${affixTextOf(a)}`}
+            className={`hero__tooltip-line ${tierColorClass(affixTierOf(item.kind, a))}`}
+          >
+            <span className="hero__tooltip-lv">{formatMessage({ id: 'hero.memoryRandom' })}</span>
+            {cleanAffixText(resolveAffixText(affixTextOf(a), affixValuesOf(a)))}
+          </div>
+        ))}
       </div>
     )
   }

@@ -22,6 +22,9 @@ import {
   isShieldReturnIntervalText,
   isReturnIntervalText,
   isShieldChargeSpeedText,
+  isAttackBlockText,
+  isSpellBlockText,
+  isCombinedBlockText,
 } from './survivalAffix.js'
 
 // 生存板块统计：对 build 内 6 个模块词缀文本做正则聚合，产出护甲/闪避（总值+各类加成）、
@@ -77,6 +80,8 @@ export function aggregateSurvivalStats(build) {
     shieldReturnInterval: 0,
     manaRegen: 0,
     shieldChargeSpeed: 0,
+    attackBlock: 0,
+    spellBlock: 0,
   }
   const states = normalizeStates(build && build.configuration)
 
@@ -142,6 +147,24 @@ export function aggregateSurvivalStats(build) {
           const v = pctValue(text)
           if (v != null) acc.shieldChargeSpeed += v
         }
+
+        // 攻击/法术格挡率：组合词缀「攻击和法术格挡率」同时计入两者；「每有+X%攻击或法术格挡率」为条件句（forEachGatedClause 已门控）
+        if (isCombinedBlockText(text)) {
+          const v = pctValue(text)
+          if (v != null) {
+            acc.attackBlock += v
+            acc.spellBlock += v
+          }
+        } else {
+          if (isAttackBlockText(text)) {
+            const v = pctValue(text)
+            if (v != null) acc.attackBlock += v
+          }
+          if (isSpellBlockText(text)) {
+            const v = pctValue(text)
+            if (v != null) acc.spellBlock += v
+          }
+        }
       })
     }
   }
@@ -161,5 +184,7 @@ export function aggregateSurvivalStats(build) {
     manaRegen: acc.manaRegen,
     shieldChargePct: +(SHIELD_CHARGE_BASE_PCT * (1 + acc.shieldChargeSpeed / 100)).toFixed(1),
     shieldRechargeDelay: SHIELD_RECHARGE_DELAY_S,
+    attackBlock: acc.attackBlock,
+    spellBlock: acc.spellBlock,
   }
 }

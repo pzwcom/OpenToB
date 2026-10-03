@@ -6,7 +6,7 @@
 
 import { forEachGatedClause } from './conditionClauses.js'
 
-const RANGE_RE = /(\d+(?:\.\d+)?)\s*[~〜\-－—–]\s*(\d+(?:\.\d+)?)/
+const RANGE_RE = /([+-]?\d+(?:\.\d+)?)\s*[~〜\-－—–]\s*([+-]?\d+(?:\.\d+)?)/
 const VALUE_RE = /([+-]?\d+(?:\.\d+)?)\s*%/
 
 // 百分比数值：范围取中值，单值取自身（与 survivalStats 口径一致）
@@ -17,7 +17,8 @@ export function pctValue(text) {
   return m ? parseFloat(m[1]) : null
 }
 
-export const MANA_REGEN_RE = /每秒(?:自然)?回复(\d+(?:\.\d+)?)(?:点)?魔力/
+// 每秒自然回复魔力：`每秒自然回复3%魔力` 的 % 在数值与魔力之间（50 级基准为固定值，% 为按最大值比例）
+export const MANA_REGEN_RE = /每秒(?:自然)?回复(\d+(?:\.\d+)?)%?(?:点)?魔力/
 
 // 局部「该装备…」基底不参与生存板块加算（由装备面板/护盾模块消费）
 export const LOCAL_BASE_RE = /该装备/
@@ -99,6 +100,19 @@ export function isShieldChargeSpeedText(text) {
   return text.includes('护盾充能速度')
 }
 
+// 攻击/法术格挡率：`+X%攻击格挡率` / `+X%法术格挡率`；组合词缀「攻击和/与/或法术格挡率」同时计入两者。
+export function isAttackBlockText(text) {
+  return text.includes('攻击格挡率')
+}
+
+export function isSpellBlockText(text) {
+  return text.includes('法术格挡率')
+}
+
+export function isCombinedBlockText(text) {
+  return /攻击[和与或]法术格挡率/.test(text)
+}
+
 // 判定一条子句是否被生存板块计算计入（与 aggregateSurvivalStats 各分支一致）：
 // 护甲值/闪避值（乘区或加算）、生命/护盾返还及返还间隔、魔力回复、护盾充能速度。
 // 局部「该装备护甲值/闪避值」由 baseArmorEvasion 解析计入基底，算消费；
@@ -112,6 +126,9 @@ function consumesSurvivalClause(clause) {
   if (clause.includes('返还')) return true
   if (MANA_REGEN_RE.test(clause)) return true
   if (isShieldChargeSpeedText(clause)) return true
+  if (isCombinedBlockText(clause)) return true
+  if (isAttackBlockText(clause)) return true
+  if (isSpellBlockText(clause)) return true
   return false
 }
 

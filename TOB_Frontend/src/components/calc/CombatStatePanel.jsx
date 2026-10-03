@@ -2,16 +2,18 @@ import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
 import { Slider, Switch, Tooltip } from 'antd'
 import { buildStore } from '../../stores/buildStore.js'
-import { combatStates, applyBlessingCaps } from '../../utils/combatStates.js'
+import { combatStates, applyBlessingCaps, applyTetherCap, applyWarmBreezeCap } from '../../utils/combatStates.js'
 import './CombatStatePanel.less'
 
 const CATEGORY_ORDER = ['selfBuff', 'selfDebuff', 'enemyDebuff', 'environment']
 
-const requiresTrait = (meta) => {
+// requires 可同时指定多个英雄特性（如 弹药 三个投射物英雄共用）：返回英雄名数组
+const requiresTraits = (meta) => {
   if (!meta.requires || !Array.isArray(meta.requires)) return null
-  return meta.requires[0] && meta.requires[0].startsWith('heroTrait:')
-    ? meta.requires[0].slice('heroTrait:'.length)
-    : null
+  const traits = meta.requires
+    .filter((r) => r.startsWith('heroTrait:'))
+    .map((r) => r.slice('heroTrait:'.length))
+  return traits.length ? traits : null
 }
 
 function StateControl({ stateKey, meta, value, locked, lockedBy, maxOverride }) {
@@ -68,18 +70,27 @@ function CombatStatePanel() {
   const { formatMessage } = useIntl()
   const cfg = buildStore.build.configuration || {}
   const blessingCaps = buildStore.blessingCaps || {}
-  const states = applyBlessingCaps(cfg, blessingCaps)
+  const states = applyWarmBreezeCap(
+    applyTetherCap(
+      applyBlessingCaps(cfg, blessingCaps),
+      buildStore.tetherCap || 3
+    ),
+    buildStore.warmBreezeCap || 10
+  )
   const heroName = (buildStore.build.heroTraits && buildStore.build.heroTraits.name) || ''
 
   const isLocked = (meta) => {
-    const trait = requiresTrait(meta)
-    return trait ? { locked: trait !== heroName, by: trait } : { locked: false, by: null }
+    const traits = requiresTraits(meta)
+    return traits ? { locked: !traits.includes(heroName), by: traits[0] } : { locked: false, by: null }
   }
 
   const capByStateKey = {
     blessAgile: blessingCaps.agile,
     blessTough: blessingCaps.tough,
     blessFocus: blessingCaps.focus,
+    tetherStacks: buildStore.tetherCap || 3,
+    warmBreezeStacks: buildStore.warmBreezeCap || 10,
+    moistenStacks: 10,
   }
 
   return (
@@ -87,9 +98,12 @@ function CombatStatePanel() {
       <div className="combat-state__hint">{formatMessage({ id: 'config.hint' })}</div>
 
       {CATEGORY_ORDER.map((cat) => {
-        const items = Object.entries(combatStates).filter(
-          ([, meta]) => meta.category === cat
-        )
+        // 不同英雄各自独立的配置项：requires 指定英雄特性的状态（暖风/怒火爆发等）仅对该英雄展示
+        const items = Object.entries(combatStates).filter(([, meta]) => {
+          if (meta.category !== cat) return false
+          const traits = requiresTraits(meta)
+          return traits ? traits.includes(heroName) : true
+        })
         if (items.length === 0) return null
         return (
           <div className="combat-state__panel" key={cat}>

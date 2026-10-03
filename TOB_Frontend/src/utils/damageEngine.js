@@ -1,6 +1,6 @@
 import { normalizeStates, evaluateCondition } from './combatStates.js'
 import { collectEffects } from './specialAffixRules.js'
-import { cleanAffixText } from './affixText.js'
+import { cleanAffixText, normalizeAffixNumbers } from './affixText.js'
 import { consumerOf } from './affixConsumers.js'
 import { forEachGatedClause } from './conditionClauses.js'
 import { shieldAffixRe } from './shieldAffix.js'
@@ -14,7 +14,7 @@ const ELEMENTAL = ['cold', 'fire', 'lightning']
 const DOT_TYPES = ['ignite', 'wither', 'trauma', 'worsen', 'aggravate']
 
 const VALUE_RE = /([+-]?\d+(?:\.\d+)?)\s*%/
-const RANGE_RE = /(\d+(?:\.\d+)?)\s*[~〜\-－—–]\s*(\d+(?:\.\d+)?)/
+const RANGE_RE = /([+-]?\d+(?:\.\d+)?)\s*[~〜\-－—–]\s*([+-]?\d+(?:\.\d+)?)/
 const FLAT_RE = /点(物理|火焰|冰冷|闪电|腐蚀|侵蚀|混乱)伤害/
 
 // 护盾（能量护盾）：
@@ -59,6 +59,12 @@ function rangeAvg(text) {
   return m ? (parseFloat(m[1]) + parseFloat(m[2])) / 2 : null
 }
 
+// 点伤单值：`攻击附加110点火焰伤害` 取首个带符号数值
+function flatSingleValue(text) {
+  const m = text.match(/([+-]?\d+(?:\.\d+)?)/)
+  return m ? parseFloat(m[1]) : null
+}
+
 function fallbackEffects(others) {
   const effects = []
   const incMap = new Map()
@@ -66,11 +72,13 @@ function fallbackEffects(others) {
   // 被 fallback 实际消费的词缀文本（含点伤 / 无条件伤害句），供"未计入词缀"统计取差集
   const consumed = new Set()
   for (const raw of others) {
-    const text = cleanAffixText(raw).trim()
+    // 数值括号归一：`(-20–-15)%` → `-20–-15%`，与 collectEffects/classifyAffixText 同口径
+    const text = cleanAffixText(normalizeAffixNumbers(raw)).trim()
     if (!text) continue
     const flatM = text.match(FLAT_RE)
     if (flatM) {
-      const avg = rangeAvg(text)
+      // 附加点伤：范围取中值；单值（`攻击附加110点火焰伤害`）取自身
+      const avg = rangeAvg(text) ?? flatSingleValue(text)
       if (avg != null) {
         consumed.add(text)
         effects.push({ type: 'addAs', target: ELEMENT_MAP[flatM[1]], source: text, value: avg })
@@ -131,10 +139,13 @@ function fallbackEffects(others) {
 // 此处排除，不再视为未计入。用于"未计入词缀"面板：识别标注 > 静默忽略，避免静默算错。
 // states 为战斗状态（normalizeStates 后），保证「统计已计入 ⇔ 计算真实计入」一致。
 export function unconsumedAffixes(affixTexts, states) {
-  const { others } = collectEffects(affixTexts || [])
+  const { effects, others } = collectEffects(affixTexts || [])
+  // 条件未满足的已消费词缀（如 圣光领域 关时的 在圣光领域中时，额外+X%伤害）视为未计入，
+  // 与计算真实计入口径一致：状态关 → 只进「未计入」面板；状态开 → 才计入。
+  const inactive = effects.filter((e) => e.condition && !evaluateCondition(e.condition, states))
   const { consumed } = fallbackEffects(others)
   const map = new Map()
-  for (const raw of others) {
+  for (const raw of [...others, ...inactive.map((e) => e.source)]) {
     const text = cleanAffixText(raw).trim()
     if (!text) continue
     if (consumed.has(text)) continue
