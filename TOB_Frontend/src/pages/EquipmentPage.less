@@ -153,6 +153,12 @@
     gap: 10px;
   }
 
+  &__inv-pager {
+    display: flex;
+    justify-content: center;
+    padding-top: 4px;
+  }
+
   &__inv-card {
     display: flex;
     flex-direction: column;
@@ -449,6 +455,10 @@
     position: absolute;
     top: 2px;
     right: 2px;
+    max-width: calc(100% - 4px);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     padding: 0 4px;
     font-size: 9px;
     color: var(--amber-300);

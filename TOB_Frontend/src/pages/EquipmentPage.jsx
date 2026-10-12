@@ -1,7 +1,17 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
-import { Button, Drawer, Dropdown, Menu, Popover, Select, Slider, message } from 'antd'
+import {
+  Button,
+  Drawer,
+  Dropdown,
+  Menu,
+  Pagination,
+  Popover,
+  Select,
+  Slider,
+  message,
+} from 'antd'
 import { DownOutlined, PlusOutlined } from '@ant-design/icons'
 import { buildStore } from '../stores/buildStore.js'
 import ModulePresetButton from '../components/module/ModulePresetButton.jsx'
@@ -615,11 +625,20 @@ function formFromGraftItem(item) {
   }
 }
 
+// 库存网格几何：与 EquipmentPage.less 的 __inv-grid（minmax(280px, 1fr) + gap 10px）保持一致
+const INV_GRID_MIN_CARD = 280
+const INV_GRID_GAP = 10
+// 库存每页最多显示的行数，超出翻页
+const INV_PAGE_ROWS = 3
+
 function EquipmentPage() {
   const { formatMessage } = useIntl()
   const [drawer, setDrawer] = useState({ open: false, slotKey: null, inventoryId: null })
   const [form, setForm] = useState(EMPTY_FORM)
   const [filterCategory, setFilterCategory] = useState('')
+  const [invPage, setInvPage] = useState(1)
+  const [invColumns, setInvColumns] = useState(4)
+  const invGridRef = useRef(null)
 
   const equipment = buildStore.build.equipment || {}
   // buildStore 保证 equipmentInventory 恒为数组（默认值/loadFromData/action 均维护），observer 下引用稳定
@@ -634,6 +653,42 @@ function EquipmentPage() {
   const filteredInventory = filterCategory
     ? inventory.filter((it) => it.category === filterCategory)
     : inventory
+
+  // 网格列数由容器宽度决定（auto-fill + minmax），据此算每页条数 = 列数 × 3 行
+  const hasInventoryItems = filteredInventory.length > 0
+
+  useEffect(() => {
+    const el = invGridRef.current
+    if (!el) return undefined
+    const measure = () => {
+      const cols = Math.max(
+        1,
+        Math.floor((el.clientWidth + INV_GRID_GAP) / (INV_GRID_MIN_CARD + INV_GRID_GAP))
+      )
+      setInvColumns(cols)
+    }
+    measure()
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', measure)
+      return () => window.removeEventListener('resize', measure)
+    }
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [hasInventoryItems])
+
+  const invPageSize = invColumns * INV_PAGE_ROWS
+  const invPageCount = Math.max(1, Math.ceil(filteredInventory.length / invPageSize))
+  const invCurrentPage = Math.min(invPage, invPageCount)
+  const inventoryPageItems = filteredInventory.slice(
+    (invCurrentPage - 1) * invPageSize,
+    invCurrentPage * invPageSize
+  )
+
+  // 新建条目追加在库存末尾：保存后跳到它所在的那一页，避免翻不到刚加的装备
+  function goToInventoryItem(index) {
+    setInvPage(Math.floor(index / invPageSize) + 1)
+  }
 
   const isLegendName = (name) => !!name && LEGEND_ITEMS.some((l) => l.value === name)
 
@@ -1042,6 +1097,7 @@ function EquipmentPage() {
         buildStore.updateEquipmentItem(id, item)
       } else {
         id = buildStore.addEquipmentItem(item)
+        goToInventoryItem(inventory.length)
       }
     }
     if (drawer.slotKey) buildStore.setEquipmentSlot(drawer.slotKey, id)
@@ -1075,13 +1131,23 @@ function EquipmentPage() {
       message.warning(formatMessage({ id: ruleError }))
       return
     }
-    buildStore.setEquipmentSlot(drawer.slotKey, inventoryId)
+    placeItemInSlot(inventoryId, drawer.slotKey)
+    message.success(
+      formatMessage({ id: 'equip.equippedToast' }, { slot: slotLabel(drawer.slotKey) })
+    )
     closeDrawer()
   }
 
   // 库存条目当前所在槽位（未穿戴返回 ''）
   const equippedSlotOf = (inventoryId) =>
     SLOT_KEYS.find((k) => equipment[k] === inventoryId) || ''
+
+  // 写入槽位：同一件装备不能同时占用两个槽位，已在别的槽位时先摘下（相当于移动）
+  function placeItemInSlot(inventoryId, slotKey) {
+    const wornSlot = equippedSlotOf(inventoryId)
+    if (wornSlot && wornSlot !== slotKey) buildStore.setEquipmentSlot(wornSlot, '')
+    buildStore.setEquipmentSlot(slotKey, inventoryId)
+  }
 
   // 库存卡「装备」：装备到指定槽位（组合规则校验通过后写入）
   function equipItemToSlot(item, slotKey) {
@@ -1095,7 +1161,7 @@ function EquipmentPage() {
       message.warning(formatMessage({ id: ruleError }))
       return
     }
-    buildStore.setEquipmentSlot(slotKey, item.id)
+    placeItemInSlot(item.id, slotKey)
     message.success(
       formatMessage({ id: 'equip.equippedToast' }, { slot: slotLabel(slotKey) })
     )
@@ -1328,7 +1394,10 @@ function EquipmentPage() {
               value={filterCategory || undefined}
               placeholder={formatMessage({ id: 'equip.filterAll' })}
               allowClear
-              onChange={(v) => setFilterCategory(v || '')}
+              onChange={(v) => {
+                setFilterCategory(v || '')
+                setInvPage(1)
+              }}
               options={categories.map((c) => ({ value: c, label: c }))}
             />
             <Button size="small" onClick={handleClearInventory}>
@@ -1339,7 +1408,23 @@ function EquipmentPage() {
         {filteredInventory.length === 0 ? (
           <div className="equip__inv-empty">{formatMessage({ id: 'equip.inventoryEmpty' })}</div>
         ) : (
-          <div className="equip__inv-grid">{filteredInventory.map(renderInventoryCard)}</div>
+          <>
+            <div className="equip__inv-grid" ref={invGridRef}>
+              {inventoryPageItems.map(renderInventoryCard)}
+            </div>
+            {invPageCount > 1 && (
+              <div className="equip__inv-pager">
+                <Pagination
+                  size="small"
+                  current={invCurrentPage}
+                  pageSize={invPageSize}
+                  total={filteredInventory.length}
+                  showSizeChanger={false}
+                  onChange={setInvPage}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -1382,27 +1467,39 @@ function EquipmentPage() {
                 {formatMessage({ id: 'equip.pickFromInventory' })}
               </div>
               <div className="equip__edit-pick-strip">
-                {slotCandidates.map((it) => (
-                  <div
-                    key={it.id}
-                    className={`equip__edit-pick-card ${
-                      equippedItem?.id === it.id ? 'equip__edit-pick-card--equipped' : ''
-                    }`}
-                    onClick={() => equipInventoryItem(it.id)}
-                  >
-                    <img
-                      src={encodeURI(it.imgPath)}
-                      alt={it.name}
-                      className="equip__edit-pick-img"
-                    />
-                    <div className="equip__edit-pick-name">{it.name}</div>
-                    {equippedItem?.id === it.id && (
-                      <div className="equip__edit-pick-badge">
-                        {formatMessage({ id: 'equip.equipped' })}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                {slotCandidates.map((it) => {
+                  // 同一件装备可能穿在本弹窗以外的槽位：一律按「已装备」标注，并显示所在槽位
+                  const wornSlot = equippedSlotOf(it.id)
+                  return (
+                    <div
+                      key={it.id}
+                      className={`equip__edit-pick-card ${
+                        wornSlot ? 'equip__edit-pick-card--equipped' : ''
+                      }`}
+                      onClick={() => equipInventoryItem(it.id)}
+                    >
+                      <img
+                        src={encodeURI(it.imgPath)}
+                        alt={it.name}
+                        className="equip__edit-pick-img"
+                      />
+                      <div className="equip__edit-pick-name">{it.name}</div>
+                      {wornSlot && (
+                        <div
+                          className="equip__edit-pick-badge"
+                          title={formatMessage(
+                            { id: 'equip.equippedToast' },
+                            { slot: slotLabel(wornSlot) }
+                          )}
+                        >
+                          {wornSlot === drawer.slotKey
+                            ? formatMessage({ id: 'equip.equipped' })
+                            : slotLabel(wornSlot)}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}
