@@ -3,3 +3,7 @@
 
 # spec
 /.spec
+*.webp
+*.jpg
+*.png
+/TOB_Frontend/src/assets/json
