@@ -4,7 +4,7 @@ import { useIntl } from 'react-intl'
 import { Button, Input, Modal, Popconfirm, Slider, Tooltip, message } from 'antd'
 import { CloseOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import { buildStore } from '../stores/buildStore.js'
-import { modulePresetStore } from '../stores/modulePresetStore.js'
+import ModulePresetButton from '../components/module/ModulePresetButton.jsx'
 import { uuidv4 } from '../stores/uuid.js'
 import {
   CORE_BOOST_FACTOR,
@@ -497,9 +497,7 @@ function PactSpiritPage() {
       <div className="pact__header">
         <h2 className="pact__title">{formatMessage({ id: 'tab.pactSpirit' })}</h2>
         <div className="pact__header-actions">
-          <Button size="small" onClick={() => modulePresetStore.openDrawer('pactSpirit')}>
-            {formatMessage({ id: 'preset.open' })}
-          </Button>
+          <ModulePresetButton module="pactSpirit" />
           <Button size="small" onClick={clearAll}>
             {formatMessage({ id: 'pact.clearAll' })}
           </Button>

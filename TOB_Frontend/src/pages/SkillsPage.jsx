@@ -4,7 +4,7 @@ import { useIntl } from 'react-intl'
 import { Button, Empty, Input, InputNumber, Modal, Slider, Tooltip, message } from 'antd'
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import { buildStore } from '../stores/buildStore.js'
-import { modulePresetStore } from '../stores/modulePresetStore.js'
+import ModulePresetButton from '../components/module/ModulePresetButton.jsx'
 import {
   SKILL_FAMILY,
   activeSkills,
@@ -907,9 +907,7 @@ function SkillsPage() {
       <div className="sk__header">
         <h2 className="sk__title">{formatMessage({ id: 'tab.skills' })}</h2>
         <div className="sk__header-actions">
-          <Button size="small" onClick={() => modulePresetStore.openDrawer('skills')}>
-            {formatMessage({ id: 'preset.open' })}
-          </Button>
+          <ModulePresetButton module="skills" />
           <Button size="small" onClick={clearAllSkills}>
             {formatMessage({ id: 'skills.resetAll' })}
           </Button>

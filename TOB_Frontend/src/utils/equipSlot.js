@@ -1,11 +1,16 @@
 const isShield = (subCategory) => /盾牌$/.test(subCategory || '')
 
+// 单手武器（非盾牌）：主手/副手均可，双持
+const isOneHandedWeapon = (item) =>
+  !!item && item.category === '单手武器' && !isShield(item.subCategory)
+
 // 槽位-类别匹配规则（装备 JSON「类别」值域：头盔/胸甲/手套/靴子/饰品/单手武器/双手武器；
-// 饰品按「细分类」区分项链/戒指/腰带，盾牌在「单手武器」类别下按细分类归入副手）
+// 饰品按「细分类」区分项链/戒指/腰带，盾牌在「单手武器」类别下按细分类归入副手；
+// 副手可持盾牌或单手武器（双持），双手武器仅主手）
 const SLOT_CATEGORY_RULES = {
   mainHand: (item) =>
     ['单手武器', '双手武器'].includes(item.category) && !isShield(item.subCategory),
-  offHand: (item) => isShield(item.subCategory),
+  offHand: (item) => isShield(item.subCategory) || isOneHandedWeapon(item),
   helmet: (item) => item.category === '头盔',
   armor: (item) => item.category === '胸甲',
   gloves: (item) => item.category === '手套',
@@ -103,6 +108,7 @@ function validateEquipRules({ equipment, inventory, item, slotKey, isLegendName 
 
 export {
   isShield,
+  isOneHandedWeapon,
   SLOT_CATEGORY_RULES,
   itemMatchesSlot,
   graftMatchesSlot,

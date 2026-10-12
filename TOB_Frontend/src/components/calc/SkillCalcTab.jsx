@@ -47,6 +47,8 @@ const DETAIL_META = {
   armorPen: { label: 'calculations.skill.detail.armorPen', pct: true },
   erosionPen: { label: 'calculations.skill.detail.erosionPen', pct: true },
   spiritSourceEffect: { label: 'calculations.skill.detail.spiritSourceEffect', pct: true },
+  empoweredSkillChance: { label: 'calculations.skill.detail.empoweredSkillChance', pct: true },
+  warmBreezeGrowth: { label: 'calculations.skill.detail.warmBreezeGrowth', pct: false },
   doubleDamageChance: { label: 'calculations.skill.detail.doubleDamage', pct: true },
   countCap: { label: 'calculations.skill.detail.countCap', pct: false, int: true },
   atkSpeed: { label: 'calculations.skill.detail.atkSpeed', pct: true },
@@ -162,6 +164,43 @@ function buildRows(stats, branch, formatMessage) {
       detailKeys: ['doubleDamageChance'],
     }
   )
+
+  // 魔灵强化技能使用几率（守望的暖风·让清风吹拂：`魔灵+30%强化技能使用几率`）
+  // 与暖风折算生长值（满级人造月亮：`每拥有1层暖风，+6生长值`，按当前暖风层数折算）。
+  const breezeRows = [
+    {
+      key: 'empoweredSkillChance',
+      label: formatMessage({ id: 'calculations.skill.empoweredSkillChance' }),
+      value: stats.empoweredSkillChance,
+      suffix: '%',
+      active: stats.empoweredSkillChance > 0,
+      detailKeys: ['empoweredSkillChance'],
+    },
+    {
+      key: 'warmBreezeGrowth',
+      label: formatMessage({ id: 'calculations.skill.warmBreezeGrowth' }),
+      value: stats.warmBreezeGrowthBonus,
+      suffix: '',
+      active: stats.warmBreezeGrowthBonus > 0,
+      detailKeys: ['warmBreezeGrowth'],
+      hint:
+        stats.warmBreezeGrowthPerStack > 0
+          ? formatMessage(
+              { id: 'calculations.skill.warmBreezeGrowthHint' },
+              {
+                stacks: stats.warmBreezeStacks,
+                cap: stats.warmBreezeCap,
+                per: stats.warmBreezeGrowthPerStack,
+              }
+            )
+          : null,
+    },
+  ]
+  for (const r of breezeRows) {
+    const hasDetail = r.detailKeys.some((dk) => (stats.detail[dk] || []).length)
+    if (!hasDetail && !r.active) continue
+    rows.push(r)
+  }
 
   // 纽带：当前层数/上限（层数来自战斗状态滑块，上限 = 基础 3 + 各模块「+N纽带层数上限」词缀）
   rows.push({

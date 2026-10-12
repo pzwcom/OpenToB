@@ -6,6 +6,7 @@ import AffixStatsPanel from '../components/affix/AffixStatsPanel.jsx'
 import UnconsumedAffixPanel from '../components/affix/UnconsumedAffixPanel.jsx'
 import SkillCalcTab from '../components/calc/SkillCalcTab.jsx'
 import CombatStatePanel from '../components/calc/CombatStatePanel.jsx'
+import ModulePresetButton from '../components/module/ModulePresetButton.jsx'
 import './CalculationsPage.less'
 
 function StatRow({ label, value, className, suffix }) {
@@ -273,6 +274,9 @@ function CalculationsPage() {
     <div className="calc">
       <div className="calc__header">
         <h2 className="calc__title">{formatMessage({ id: 'calculations.title' })}</h2>
+        <div className="calc__header-actions">
+          <ModulePresetButton module="calculations" />
+        </div>
       </div>
 
       <Tabs className="calc__tabs" items={items} />

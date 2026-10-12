@@ -70,7 +70,7 @@ function BuilderView() {
 
   return (
     <div className="builder">
-        <AppHeader saveStatus={buildStore.saveStatus} />
+      <AppHeader saveStatus={buildStore.saveStatus} />
       <div className="builder__body">
         <AppSidebar />
         <main className="builder__main">

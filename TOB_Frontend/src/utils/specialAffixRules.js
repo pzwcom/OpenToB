@@ -74,13 +74,34 @@ const CONV_EL_MAP = {
   混沌: 'chaos',
 }
 
+// 文本中的运行时状态前缀 → condition（守望的暖风特性）。
+// 这些前缀（守望状态期间 / 非重聚状态 / 重聚期间）不在 conditionClauses 的 LEADING_COND_RE 覆盖面内
+// （既非「被…」开头，也不以「时，/时,」收尾），若在 RULES 侧不显式挂 condition，
+// 会被当成无条件从句全量计入（化身万物的暖风 承伤 / 最喜悦的重逢 每魔灵增伤 的原始缺陷）。
+function statePrefixCondition(text) {
+  if (/守望状态期间|处于守望状态/.test(text)) return { state: 'watchState' }
+  if (/非重聚状态/.test(text)) return { state: 'reunionState', value: false }
+  if (/进入?重聚状态|重聚期间/.test(text)) return { state: 'reunionState' }
+  return null
+}
+
+// 从句中唯一出现的伤害元素 → damageType（多元出现时返回 null = 不做元素限定，视作全元素）。
+function soleDamageType(text) {
+  const hits = []
+  for (const [cn, el] of Object.entries(CONV_EL_MAP)) {
+    if (text.includes(cn)) hits.push(el)
+  }
+  if (text.includes('元素')) hits.push('elemental')
+  const uniq = [...new Set(hits)]
+  return uniq.length === 1 ? uniq[0] : null
+}
+
 function percentValue(text) {
   const rm = text.match(RANGE_RE)
   if (rm) return (parseFloat(rm[1]) + parseFloat(rm[2])) / 2
   const m = text.match(VALUE_RE)
   return m ? parseFloat(m[1]) : null
 }
-
 function rangeAvg(text) {
   const m = text.match(RANGE_RE)
   return m ? (parseFloat(m[1]) + parseFloat(m[2])) / 2 : null
@@ -494,6 +515,8 @@ const RULES = [
         type: 'defensive',
         target: 'damageReduction',
         source: text,
+        // 「守望状态期间，伊瑞斯额外-20%受到的伤害」→ 守望状态门控（原先无条件恒计入）。
+        condition: statePrefixCondition(text),
         value: isReduction ? Math.abs(x) / 100 : -Math.abs(x) / 100,
       }
     },
@@ -959,6 +982,8 @@ const RULES = [
         target: unit === '魔灵' || unit === '智械' ? { skillType: 'minion' } : fallbackTargetLike(text),
         more,
         source: text,
+        // 「守望状态期间，每有一个魔灵，被融合魔灵额外X%伤害」等前缀 → 守望状态门控（原先无条件全量计入）。
+        condition: statePrefixCondition(text),
         value: (ctx) => {
           const count = ctx.states.minionCount || 0
           const stacks = Math.floor(count / x)
@@ -1014,6 +1039,33 @@ const RULES = [
           const capped = cap != null ? Math.min(cap / 100, v) : v
           return more ? 1 + capped : capped
         },
+      }
+    },
+  },
+  {
+    // 魔灵 / 智械 字样的增伤从句（G1 修复）。原文只查「召唤物」：
+    // 「额外-60%魔灵技能伤害」「被融合的魔灵额外X%伤害」等会漏过 minionDamage，
+    // 再被 fallback 当玩家向 more/inc 计入（额外-60%魔灵技能伤害 曾把玩家伤害 ×0.4）。
+    // 位置：growthPerPoint（魔灵每有N点生长值伤害）之后——生长值折算句更具体，先手截走；
+    // 又必须在 statPct/statAll/statFlat 之前，避免「魔灵+N暴击值」被属性规则误吸。
+    // 排除转换/免疫/转移/返还等非增伤语义（如「所有魔灵100%物理和元素伤害转化为腐蚀伤害」）。
+    id: 'spiritMinionDamage',
+    test: (text) =>
+      /(魔灵|智械)/.test(text) &&
+      /(伤害|暴击)/.test(text) &&
+      !/(转化为|转换|免疫|转移|返还|反弹|抵消|抵扣)/.test(text),
+    build: (text) => {
+      const x = percentValue(text)
+      if (x == null) return null
+      const more = isMoreText(text)
+      const damageType = soleDamageType(text)
+      return {
+        type: 'minion',
+        target: damageType ? { skillType: 'minion', damageType } : { skillType: 'minion' },
+        more,
+        source: text,
+        value: more ? 1 + x / 100 : x / 100,
+        condition: statePrefixCondition(text),
       }
     },
   },

@@ -780,8 +780,85 @@ export function computeBlessingCaps(build) {
   return caps
 }
 
-// 暖风满层层数：守望的暖风特性满层 = 基础 10 层。
-// （特性「让清风吹拂/最温暖的守望」与月相词缀可提升层数上限，尚未解析，暂按基础满层计。）
-export function computeWarmBreezeCap() {
-  return 10
+// 暖风层数上限的两类词缀（守望的暖风特性 + 追忆·月相，均带「英雄特性限定：遗世魔灵·伊瑞斯|守望的暖风」）：
+//   合计型：`最多(+4/+5/+6/+7/+8)暖风层数上限`（让清风吹拂）、`最多(+15/…/+23)暖风层数上限`（最温暖的守望）
+//   叠加型：`每使用1次终极技能，+1暖风层数上限，上限7层`（月相·大风吹）→ 每「每N次」叠一层，最多「上限M层」
+const WARM_BREEZE_CAP_TOTAL_RE = /最多\s*[（(]?\s*([+-]?\d+(?:\.\d+)?)\s*[)）]?\s*暖风层数上限/
+// 裸写上限制（同段已出现「暖风层数上限」时生效）：`+1暖风层数上限，最多+23`
+const WARM_BREEZE_CAP_BARE_RE = /最多\s*[（(]?\s*([+-]?\d+(?:\.\d+)?)\s*[)）]?(?!\s*暖风)/
+const WARM_BREEZE_CAP_STACK_RE =
+  /每使用\s*(\d+)\s*次[^;；]{0,12}?([+-]?\d+)\s*暖风层数上限[，,][^;；]{0,12}?上限\s*(\d+)\s*层/
+// 人造月亮（满级 5 解锁）：`每拥有1层暖风，+6生长值`
+const WARM_BREEZE_GROWTH_RE = /每拥有1层暖风[，,]?\s*\+?\s*(\d+(?:\.\d+)?)\s*生长值/
+// 「持续至进入重聚状态」的上限增益在重聚状态下失效
+const UNTIL_REUNION_RE = /持续至进入重聚状态/
+
+const ALL_AFFIX_COLLECTS = [
+  collectDivinityAffixTexts,
+  collectTalentAffixTexts,
+  collectEquipmentAffixTexts,
+  collectMemoryAffixTexts,
+  collectPactAffixTexts,
+  collectSkillAffixTexts,
+  collectHeroTraitAffixTexts,
+]
+
+function forEachAffixText(build, cb) {
+  for (const collect of ALL_AFFIX_COLLECTS) {
+    for (const raw of collect(build) || []) cb(String(raw || ''))
+  }
+}
+
+// 暖风满层层数：守望的暖风特性满层 = 基础 10 层
+// （守望状态期间，被融合的魔灵在非重聚状态下每隔1秒获得一层暖风，上限10层）
+// + 各模块「暖风层数上限」词缀（特性 让清风吹拂 / 最温暖的守望、追忆·月相 大风吹）。
+// states 传 build.configuration（原始状态）：重聚状态开启时，「持续至进入重聚状态」的上限增益不计。
+export function computeWarmBreezeCap(build, states) {
+  const BASE = 10
+  let cap = BASE
+  const reunion = !!(states && states.reunionState)
+  forEachAffixText(build, (text) => {
+    for (const seg of text.split(/[;；]/)) {
+      if (reunion && UNTIL_REUNION_RE.test(seg)) continue
+      const total = seg.match(WARM_BREEZE_CAP_TOTAL_RE)
+      if (total) {
+        cap += parseFloat(total[1]) || 0
+        continue
+      }
+      // 「…+1暖风层数上限，最多+23」：上限数值省略了「暖风层数上限」单位，
+      // 故仅在整段已提及该机制时，才把裸写的「最多+N」计为层数上限。
+      if (/暖风层数上限/.test(seg)) {
+        const bare = seg.match(WARM_BREEZE_CAP_BARE_RE)
+        if (bare) {
+          cap += parseFloat(bare[1]) || 0
+          continue
+        }
+      }
+      const stack = seg.match(WARM_BREEZE_CAP_STACK_RE)
+      if (stack) {
+        const per = parseFloat(stack[1]) || 0
+        const x = parseFloat(stack[2]) || 0
+        const maxLayer = parseFloat(stack[3]) || 0
+        cap += per > 0 ? (maxLayer / per) * x : maxLayer * x
+      }
+    }
+  })
+  return cap
+}
+
+// 人造月亮「每拥有1层暖风，+N生长值」的每层折算值（返回 { perStack, segments }）。
+// 该段在满级（基础1+追忆强化+固有+2 上限 5 级）时才由 collectHeroTraitAffixTexts 追加。
+export function computeWarmBreezeGrowth(build) {
+  let perStack = 0
+  const segments = []
+  forEachAffixText(build, (text) => {
+    for (const seg of text.split(/[;；]/)) {
+      const m = seg.match(WARM_BREEZE_GROWTH_RE)
+      if (m) {
+        perStack += parseFloat(m[1]) || 0
+        segments.push(seg)
+      }
+    }
+  })
+  return { perStack, segments }
 }

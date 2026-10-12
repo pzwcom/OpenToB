@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite'
 import { Tooltip, Button, Slider, InputNumber, Modal, Select, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import { buildStore } from '../stores/buildStore.js'
-import { modulePresetStore } from '../stores/modulePresetStore.js'
+import ModulePresetButton from '../components/module/ModulePresetButton.jsx'
 import heroAvatarData from '../assets/json/角色/角色头像位置.json'
 import heroTraitData from '../assets/json/角色/角色特性.json'
 import heroTraitImgData from '../assets/json/角色/角色特性图片位置.json'
@@ -715,9 +715,7 @@ function HeroPage() {
       <div className="hero__header">
         <h2 className="hero__title">{formatMessage({ id: 'tab.hero' })}</h2>
         <div className="hero__header-actions">
-          <Button size="small" onClick={() => modulePresetStore.openDrawer('hero')}>
-            {formatMessage({ id: 'preset.open' })}
-          </Button>
+          <ModulePresetButton module="hero" />
         </div>
       </div>
 

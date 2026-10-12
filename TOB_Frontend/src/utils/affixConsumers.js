@@ -1,6 +1,6 @@
 import { cleanAffixText } from './affixText.js'
 import { consumesShieldAffix } from './shieldAffix.js'
-import { consumesMinionAffix } from './minionAffix.js'
+import { consumesMinionAffix, SPIRIT_SOURCE_GROWTH_RE } from './minionAffix.js'
 import { consumesSurvivalAffix } from './survivalAffix.js'
 import { consumesCharacterAffix } from './characterAffix.js'
 import { consumesSkillLevelAffix } from './skillLevelAffix.js'
@@ -230,6 +230,35 @@ export const AFFIX_CONSUMERS = [
     key: 'minionGrowthBase',
     label: 'affixStats.minionGrowthBase',
     test: (text) => /初始生长值/.test(text),
+  },
+  {
+    // 暖风层数上限：`最多+N暖风层数上限`（守望的暖风·让清风吹拂/最温暖的守望）
+    // 与 `+N暖风层数上限，上限M层`（追忆·月相「大风吹」）——被 computeWarmBreezeCap 消费，抬高暖风满层。
+    key: 'warmBreezeCap',
+    label: 'affixStats.warmBreezeCap',
+    test: (text) => /暖风层数上限/.test(text),
+  },
+  {
+    // 暖风折算生长值（人造月亮）：`每拥有1层暖风，+N生长值`——被 computeWarmBreezeGrowth 消费，
+    // 按当前暖风层数折算为魔灵生长值（与「初始生长值」基底相加）。
+    key: 'warmBreezeGrowth',
+    label: 'affixStats.warmBreezeGrowth',
+    test: (text) => /每拥有1层暖风/.test(text) && /生长值/.test(text),
+  },
+  {
+    // 魔灵之源效果转发：`伊瑞斯不受魔灵之源效果影响，所有基础的魔灵之源效果转而作用于所有的魔灵`
+    // （守望的暖风·汇入本源的河流）——机制改写句，无独立数值面板。
+    key: 'spiritSourceForward',
+    label: 'affixStats.spiritSourceForward',
+    test: (text) => /魔灵之源效果/.test(text) && /(转而作用|作用于)/.test(text),
+  },
+  {
+    // 魔灵生长值→魔灵之源效果：`魔灵每有2点生长值，额外X%魔灵受到的魔灵之源效果`（汇入本源的河流）。
+    // 该句跨子句（首子句是「每有…」条件式），consumesMinionAffix 的门控扫描会整句跳过，
+    // 故此处用 minionAffixStats.processSpiritSourceGrowth 同源的 SPIRIT_SOURCE_GROWTH_RE 单独认定。
+    key: 'minionSpiritSourceGrowth',
+    label: 'affixStats.minionSpiritSourceGrowth',
+    test: (text) => SPIRIT_SOURCE_GROWTH_RE.test(text),
   },
 ]
 

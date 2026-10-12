@@ -8,17 +8,19 @@
 
 .preset__tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
 .preset__tab {
-  flex: 1;
-  padding: 8px 0;
+  flex: 0 1 auto;
+  padding: 8px 12px;
   border: 1px solid var(--bg-800);
   border-radius: 6px;
   background: var(--bg-900);
   color: var(--text-400);
   font-size: 14px;
+  white-space: nowrap;
   cursor: pointer;
   transition: all 0.15s;
 

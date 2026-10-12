@@ -24,6 +24,13 @@ export const ARMOR_PEN_RE = new RegExp(`召唤物${NUM_RE}%护甲减伤穿透`)
 export const ATK_SPEED_RE = new RegExp(`${NUM_RE}%召唤物攻击速度`)
 export const CAST_SPEED_RE = new RegExp(`${NUM_RE}%召唤物施法速度`)
 export const DUAL_SPEED_RE = new RegExp(`${NUM_RE}%召唤物攻击[与和]施法速度`)
+// 强化技能使用几率（守望的暖风 让清风吹拂：`魔灵+30%强化技能使用几率`）。
+export const EMPOWERED_SKILL_RE = new RegExp(`${NUM_RE}%强化技能使用几率`)
+// 生长值 → 魔灵之源效果折算（汇入本源的河流：`魔灵每有2点生长值，额外0.3%魔灵受到的魔灵之源效果`）。
+// 注意与 SPIRIT_SOURCE_RE 的区别：这里「魔灵受到的」在「魔灵之源效果」之前，SPIRIT_SOURCE_RE 匹配不到。
+// 组 1 = 生长值除数，组 2 = 每档百分比。
+export const SPIRIT_SOURCE_GROWTH_RE =
+  /魔灵每有\s*(\d+(?:\.\d+)?)\s*点生长值[^;；]{0,24}?([+-]?\d+(?:\.\d+)?)%魔灵受到的魔灵之源效果/
 
 export const CAP_GLOBAL_RE = /([+-]\s*\d+)\s*魔灵最大数量上限/
 export const CAP_SKILL_RE = /([+-]\s*\d+)\s*魔灵技能召唤的数量上限/
@@ -159,6 +166,8 @@ const MINION_PARSE_RES = [
   CRIT_VALUE_PCT_RE,
   CRIT_VALUE_FLAT_RE,
   SPIRIT_SOURCE_RE,
+  SPIRIT_SOURCE_GROWTH_RE,
+  EMPOWERED_SKILL_RE,
   DOUBLE_DMG_RE,
   ELEM_PEN_RE,
   ELEM_CORR_PEN_RE,

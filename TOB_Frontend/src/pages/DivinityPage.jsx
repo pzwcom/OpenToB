@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 import { message } from 'antd'
 import { buildStore } from '../stores/buildStore.js'
+import ModulePresetButton from '../components/module/ModulePresetButton.jsx'
 import BaseButton from '../components/ui/BaseButton.jsx'
 import BaseModal from '../components/ui/BaseModal.jsx'
 import DivinityGrid from '../components/divinity/DivinityGrid.jsx'
@@ -253,6 +254,9 @@ function DivinityPage() {
     <div className="divinity">
       <div className="divinity__header">
         <h2 className="divinity__title">{formatMessage({ id: 'divinity.title' })}</h2>
+        <div className="divinity__header-actions">
+          <ModulePresetButton module="divinity" />
+        </div>
       </div>
 
       <div className="divinity__body">

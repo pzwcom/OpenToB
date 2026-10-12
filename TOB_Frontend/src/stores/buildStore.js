@@ -3,7 +3,13 @@ import { t } from '../locales/index.js'
 import { saveStore } from './saveStore.js'
 import { uuidv4 } from './uuid.js'
 import { normalizeTalentType } from '../data/divinityData.js'
-import { normalizeStates, applyBlessingCaps, applyTetherCap, applyWarmBreezeCap } from '../utils/combatStates.js'
+import {
+  normalizeStates,
+  applyBlessingCaps,
+  applyTetherCap,
+  applyWarmBreezeCap,
+  applyWarmBreezeGrowth,
+} from '../utils/combatStates.js'
 import {
   aggregateDivinityAffixes,
   aggregateEquipmentAffixes,
@@ -21,6 +27,7 @@ import {
   collectTalentAffixTexts,
   computeBlessingCaps,
   computeWarmBreezeCap,
+  computeWarmBreezeGrowth,
 } from '../utils/affixAggregation.js'
 import {
   computeDamage,
@@ -206,6 +213,43 @@ function normalizePactSpirit(sp) {
   }
 }
 
+// 计算条件（configuration）的默认值：只含非战斗状态字段，状态字段由 normalizeStates 补齐
+function defaultConfiguration() {
+  return {
+    enemyLevel: 85,
+    enemyType: 'unique',
+    physRes: 30,
+    eleRes: 50,
+    enemyArmor: 20000,
+    chaosRes: 30,
+    extraProjectiles: 0,
+    aoeEffect: 0,
+    critChance: 100,
+    critMulti: 100,
+    buffs: [],
+    isInCombat: true,
+    isFullLife: true,
+    isLowLife: false,
+    isStationary: false,
+    isMoving: false,
+    hasCharges: false,
+    enemyIsIgnited: false,
+    enemyIsShocked: false,
+    enemyIsChilled: false,
+  }
+}
+
+// 计算条件的规范形态：非状态字段直取，状态字段统一补默认 + clamp。
+// 预设的保存（extract）、应用（applyCalculationsPreset）、读档（loadFromData）都必须走它，
+// 否则"状态 key 有没有被写过"会让同一份配置序列化结果不同，"已应用"判定就永远不成立。
+export function canonicalConfiguration(raw) {
+  return {
+    ...defaultConfiguration(),
+    ...(raw || {}),
+    ...normalizeStates(raw),
+  }
+}
+
 function createDefaultBuild() {
   return {
     name: t('app.unnamed'),
@@ -253,28 +297,7 @@ function createDefaultBuild() {
       inventory: [],
       placedSlates: [],
     },
-    configuration: {
-      enemyLevel: 85,
-      enemyType: 'unique',
-      physRes: 30,
-      eleRes: 50,
-      enemyArmor: 20000,
-      chaosRes: 30,
-      extraProjectiles: 0,
-      aoeEffect: 0,
-      critChance: 100,
-      critMulti: 100,
-      buffs: [],
-      isInCombat: true,
-      isFullLife: true,
-      isLowLife: false,
-      isStationary: false,
-      isMoving: false,
-      hasCharges: false,
-      enemyIsIgnited: false,
-      enemyIsShocked: false,
-      enemyIsChilled: false,
-    },
+    configuration: defaultConfiguration(),
   }
 }
 
@@ -601,22 +624,30 @@ class BuildStore {
     return computeTetherCap(this.build)
   }
 
-  // 暖风满层层数：守望的暖风特性满层（基础 10，供 CombatStatePanel 开关满层值覆盖）
+  // 暖风满层层数：守望的暖风特性满层（基础 10 + 特性/月相的上限词缀，供 CombatStatePanel 开关满层值覆盖）
   get warmBreezeCap() {
-    return computeWarmBreezeCap()
+    return computeWarmBreezeCap(this.build, this.build && this.build.configuration)
+  }
+
+  // 引擎统一战斗状态：祝福/纽带/暖风层数上限换算 + 暖风→生长值折算（人造月亮）。
+  // 计算端（engineStats）与词缀消费判定端（unconsumedAffixGroups）必须共用同一份状态，
+  // 否则「面板已计入」与「计算真实计入」会漂移。
+  get engineStates() {
+    const states = applyWarmBreezeCap(
+      applyTetherCap(
+        applyBlessingCaps(this.build.configuration, computeBlessingCaps(this.build)),
+        computeTetherCap(this.build)
+      ),
+      this.warmBreezeCap
+    )
+    return applyWarmBreezeGrowth(states, computeWarmBreezeGrowth(this.build).perStack)
   }
 
   get engineStats() {
     const cfg = this.build.configuration || {}
     const ctx = {
       build: this.build,
-      states: applyWarmBreezeCap(
-        applyTetherCap(
-          applyBlessingCaps(this.build.configuration, computeBlessingCaps(this.build)),
-          computeTetherCap(this.build)
-        ),
-        this.warmBreezeCap
-      ),
+      states: this.engineStates,
       affixTexts: [
         ...collectDivinityAffixTexts(this.build),
         ...collectTalentAffixTexts(this.build),
@@ -704,13 +735,7 @@ class BuildStore {
       hero: collectHeroTraitAffixTexts(this.build),
     }
     // 战斗状态用于条件词缀门控（与计算端一致），保证「统计已计入 ⇔ 计算真实计入」。
-    const states = applyWarmBreezeCap(
-      applyTetherCap(
-        this.build && this.build.configuration,
-        computeTetherCap(this.build)
-      ),
-      this.warmBreezeCap
-    )
+    const states = this.engineStates
     const groups = []
     for (const [source, texts] of Object.entries(sources)) {
       if (!Array.isArray(texts) || texts.length === 0) continue
@@ -732,12 +757,7 @@ class BuildStore {
   loadFromData(data) {
     if (!data) return
     const merged = { ...createDefaultBuild(), ...data }
-    // 配置归一化：保留非状态字段（enemyLevel/buffs/抗性等），状态 key 走 normalizeStates 补默认 + clamp
-    merged.configuration = {
-      ...createDefaultBuild().configuration,
-      ...(data.configuration || {}),
-      ...normalizeStates(data.configuration),
-    }
+    merged.configuration = canonicalConfiguration(data.configuration)
     if (!merged.prisms || !Array.isArray(merged.prisms.inventory)) {
       merged.prisms = { inventory: [] }
     }
@@ -1668,6 +1688,31 @@ class BuildStore {
       ...this.build,
       equipment: { ...this.build.equipment, ...data.equipment },
       equipmentInventory: merged,
+    }
+    return true
+  }
+
+  // 应用神格石板预设：整体替换 divinityPage 的库存与已放置石板
+  applyDivinityPreset(data) {
+    if (!data || !Array.isArray(data.inventory)) return false
+    const inventory = data.inventory
+    const ids = new Set(inventory.map((s) => s && s.id))
+    const placedSlates = (Array.isArray(data.placedSlates) ? data.placedSlates : []).filter(
+      (p) => p && ids.has(p.slateId)
+    )
+    this.build = {
+      ...this.build,
+      divinityPage: { ...this.build.divinityPage, inventory, placedSlates },
+    }
+    return true
+  }
+
+  // 应用计算条件预设：整体替换 configuration（走 canonicalConfiguration，保证与 extract 同形态）
+  applyCalculationsPreset(data) {
+    if (!data || !data.configuration || typeof data.configuration !== 'object') return false
+    this.build = {
+      ...this.build,
+      configuration: canonicalConfiguration(data.configuration),
     }
     return true
   }

@@ -4,7 +4,7 @@ import { useHistory, useParams } from 'react-router-dom'
 import { Tooltip, message, Modal, Select, Slider, Button } from 'antd'
 import { useState } from 'react'
 import { buildStore, talentGods, getPlayBranchesOf } from '../stores/buildStore.js'
-import { modulePresetStore } from '../stores/modulePresetStore.js'
+import ModulePresetButton from '../components/module/ModulePresetButton.jsx'
 import BaseButton from '../components/ui/BaseButton.jsx'
 import prismKindData from '../assets/json/装备/棱镜/棱镜图片及种类.json'
 import prismRandomData from '../assets/json/装备/棱镜/随机词缀.json'
@@ -721,9 +721,7 @@ function TalentsPage() {
           {formatMessage({ id: 'talent.title' }, { slot: currentSlotLabel })}
         </h2>
         <div className="talents__actions">
-          <BaseButton size="sm" variant="ghost" onClick={() => modulePresetStore.openDrawer('talents')}>
-            {formatMessage({ id: 'preset.open' })}
-          </BaseButton>
+          <ModulePresetButton module="talents" />
           <BaseButton size="sm" variant="ghost" onClick={resetSlot}>
             {formatMessage({ id: 'talent.resetSlot' })}
           </BaseButton>

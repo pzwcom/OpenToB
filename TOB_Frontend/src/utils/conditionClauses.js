@@ -42,6 +42,13 @@ const CONDITION_RULES = [
   { re: /非满护盾时/, test: (s) => !s.fullShield },
   { re: /(?<!非)满护盾时/, test: (s) => !!s.fullShield },
   { re: /聚能祝福达到上限时/, test: (s) => (s.blessFocus || 0) > 0 },
+  // 守望的暖风特性：守望状态（释放特性技能与魔灵融合后进入）与重聚状态门控。
+  // 「守望状态期间，…」「非重聚状态，…」既不匹配 `被…` 也不以「时，/时,」收尾，
+  // 不会命中 LEADING_COND_RE；若不在映射表显式登记，forEachGatedClause 会把它们当无条件子句全量计入。
+  // 注意顺序：非重聚状态 必须先于 重聚状态（前者含后者子串）。
+  { re: /守望状态期间|处于守望状态/, test: (s) => !!s.watchState },
+  { re: /非重聚状态/, test: (s) => !s.reunionState },
+  { re: /进入?重聚状态|重聚期间/, test: (s) => !!s.reunionState },
   {
     re: /周围只有\s*(\d+)\s*个敌人/,
     test: (s, m) => (s.enemyCount || 0) === Number(m[1]),

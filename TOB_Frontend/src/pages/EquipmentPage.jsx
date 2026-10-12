@@ -1,17 +1,14 @@
 import { useMemo, useState } from 'react'
 import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
-import { Button, Drawer, Select, Slider, message } from 'antd'
-import { PlusOutlined } from '@ant-design/icons'
+import { Button, Drawer, Dropdown, Menu, Popover, Select, Slider, message } from 'antd'
+import { DownOutlined, PlusOutlined } from '@ant-design/icons'
 import { buildStore } from '../stores/buildStore.js'
-import { modulePresetStore } from '../stores/modulePresetStore.js'
+import ModulePresetButton from '../components/module/ModulePresetButton.jsx'
 import legendEquipData from '../assets/json/装备/传奇装备/传奇装备.json'
 import normalEquipData from '../assets/json/装备/普通装备/普通装备.json'
 import { cleanAffixText } from '../utils/affixText.js'
-import {
-  itemMatchesSlot,
-  validateEquipRules,
-} from '../utils/equipSlot.js'
+import { itemMatchesSlot, validateEquipRules } from '../utils/equipSlot.js'
 import {
   graftBasePoolOf,
   graftCraftPoolOf,
@@ -20,15 +17,9 @@ import {
   graftSubCategory,
   isGraftPart,
 } from '../data/graftData.js'
-import {
-  normalBasePoolOf,
-  normalCraftPoolOf,
-} from '../data/normalAffixData.js'
+import { normalBasePoolOf, normalCraftPoolOf } from '../data/normalAffixData.js'
 import { perfumeAffixPool } from '../data/perfumeAffixData.js'
-import {
-  isTowerSubCategory,
-  towerAffixPoolOf,
-} from '../data/towerAffixData.js'
+import { isTowerSubCategory, towerAffixPoolOf } from '../data/towerAffixData.js'
 import EquipmentBrowser from '../components/equipment/EquipmentBrowser.jsx'
 import {
   affixDisplayText,
@@ -122,7 +113,9 @@ function renderTowerOption(entry) {
   return (
     <span className="equip__edit-option" title={text}>
       <span className="equip__edit-option-text">{text}</span>
-      <span className={`equip__edit-option-tier ${high ? 'equip__affix--red' : 'equip__affix--orange'}`}>
+      <span
+        className={`equip__edit-option-tier ${high ? 'equip__affix--red' : 'equip__affix--orange'}`}
+      >
         {series}
       </span>
     </span>
@@ -133,13 +126,12 @@ function renderTowerOption(entry) {
 function renderPerfumeOption(entry) {
   const text = cleanAffixText(entry.描述 || '')
   const name = entry.名称 || ''
-  const typeLabel = entry.类型 === 'exotic' ? '异香天赋' : entry.类型 === 'core' ? '核心天赋' : '中型天赋'
+  const typeLabel =
+    entry.类型 === 'exotic' ? '异香天赋' : entry.类型 === 'core' ? '核心天赋' : '中型天赋'
   const typeClass = entry.类型 === 'exotic' ? 'equip__affix--red' : 'equip__affix--orange'
   return (
     <span className="equip__edit-option" title={text}>
-      <span className="equip__edit-option-text">
-        {name ? `${name}：${text}` : text}
-      </span>
+      <span className="equip__edit-option-text">{name ? `${name}：${text}` : text}</span>
       <span className={`equip__edit-option-tier ${typeClass}`}>{typeLabel}</span>
     </span>
   )
@@ -168,10 +160,14 @@ const MAX_LIB_LIBRARIES = ['进阶词缀', '至臻词缀']
 // 归属同一 Library 才互斥（不同 Library 的同文本词缀是不同打造词缀，可叠加）
 function affixFamilyKey(lib, text) {
   if (!text) return ''
-  return lib + '|' + text
-    .replace(/[（(][^）)]*\d[^）)]*[)）]/g, '')
-    .replace(/\d+(?:\.\d+)?/g, '')
-    .replace(/[()（）\s]+/g, '')
+  return (
+    lib +
+    '|' +
+    text
+      .replace(/[（(][^）)]*\d[^）)]*[)）]/g, '')
+      .replace(/\d+(?:\.\d+)?/g, '')
+      .replace(/[()（）\s]+/g, '')
+  )
 }
 
 // 打造词缀 selector：扁平选项（Tier 徽标带「初阶|T0」前缀标识 Library）；与已选词缀同族的选项禁用
@@ -352,6 +348,11 @@ function inventoryCardClass(it) {
   return 'equip__inv-card--affix-5-6'
 }
 
+// 库存卡「装备」按钮的可选槽位：按类别匹配（单手武器 → 主手/副手，戒指 → 左戒/右戒）
+function slotCandidatesForItem(item) {
+  return SLOT_KEYS.filter((k) => itemMatchesSlot(item, k))
+}
+
 // 稀有度徽标颜色与卡片背景同源
 function inventoryRarityClass(it) {
   if (inventoryRarityOf(it) === 'legend') return 'equip__inv-card-rarity--legend'
@@ -359,6 +360,130 @@ function inventoryRarityClass(it) {
   if (count <= 2) return 'equip__inv-card-rarity--blue'
   if (count <= 4) return 'equip__inv-card-rarity--pink'
   return 'equip__inv-card-rarity--red'
+}
+
+// 打造词缀所属 Library 的中文标签
+const craftLibLabel = (formatMessage, lib) =>
+  formatMessage({ id: CRAFT_LIB_LABEL_KEYS[lib] || lib, defaultMessage: lib })
+
+// 词缀的来源 / 侵蚀标签（库存卡片与悬浮详情共用）
+function AffixTags({ affix }) {
+  const { formatMessage } = useIntl()
+  const a = affix
+  if (!a) return null
+  return (
+    <>
+      {a.corrupted && (
+        <span className="equip__inv-card-corrupted-tag">
+          {formatMessage({ id: 'equip.corruptedTag' })}
+        </span>
+      )}
+      {a.graftSource === 'legend' && (
+        <span className="equip__graft-source-tag">
+          {formatMessage({ id: 'equip.graftSourceLegend' })}
+        </span>
+      )}
+      {a.graftSource === 'craft' && (
+        <span className="equip__graft-source-tag">
+          {formatMessage({ id: 'equip.graftSourceCraft' })}·{a.graftKind}
+          {a.graftLibrary ? `·${craftLibLabel(formatMessage, a.graftLibrary)}` : ''}
+        </span>
+      )}
+      {a.graftSource === 'perfume' && (
+        <span className={`equip__graft-source-tag ${perfumeTypeClass(a)}`}>
+          {formatMessage({ id: 'equip.sourcePerfume' })}·{perfumeTypeLabel(a)}
+        </span>
+      )}
+      {a.graftSource === 'tower' && (
+        <span
+          className={`equip__graft-source-tag ${
+            a.graftLibrary === '高阶序列' ? 'equip__affix--red' : 'equip__affix--orange'
+          }`}
+        >
+          {formatMessage({ id: 'equip.sourceTower' })}
+          {a.graftLibrary ? `·${a.graftLibrary}` : ''}
+        </span>
+      )}
+    </>
+  )
+}
+
+// 已穿戴装备悬浮时展示的完整装备信息
+function EquipmentDetailContent({ item }) {
+  const { formatMessage } = useIntl()
+  if (!item) return null
+  const rarity = inventoryRarityOf(item)
+  const affixes = Array.isArray(item.affixes) ? item.affixes : []
+  const graftLegendItem = (item.graft && item.graft.legendItem) || ''
+  const infoRows = [
+    [formatMessage({ id: 'equip.category' }), item.category],
+    [formatMessage({ id: 'equip.subCategory' }), item.subCategory],
+    [formatMessage({ id: 'equip.requiredLevel' }), item.requiredLevel],
+  ].filter(([, value]) => value !== undefined && value !== null && value !== '')
+  return (
+    <div className="equip__detail">
+      <div className="equip__detail-head">
+        <span
+          className={`equip__detail-name ${
+            rarity === 'legend' ? 'equip__detail-name--legend' : ''
+          }`}
+        >
+          {item.name}
+        </span>
+        <span className={`equip__inv-card-rarity ${inventoryRarityClass(item)}`}>
+          {formatMessage({ id: RARITY_LABEL_KEYS[rarity] })}
+        </span>
+      </div>
+      <div className="equip__detail-info">
+        {infoRows.map(([label, value]) => (
+          <div key={label} className="equip__detail-row">
+            <span className="equip__detail-label">{label}</span>
+            <span className="equip__detail-value">{value}</span>
+          </div>
+        ))}
+        {graftLegendItem && (
+          <div className="equip__detail-row">
+            <span className="equip__detail-label">
+              {formatMessage({ id: 'equip.detailGraftLegend' })}
+            </span>
+            <span className="equip__detail-value">{graftLegendItem}</span>
+          </div>
+        )}
+      </div>
+      {item.baseAffix && (
+        <div className="equip__detail-section">
+          <div className="equip__detail-label">{formatMessage({ id: 'equip.baseAffix' })}</div>
+          <div className="equip__detail-base">{cleanAffixText(item.baseAffix)}</div>
+        </div>
+      )}
+      {affixes.length > 0 && (
+        <div className="equip__detail-section">
+          <div className="equip__detail-label">{formatMessage({ id: 'equip.affixes' })}</div>
+          <div className="equip__detail-affixes">
+            {affixes.map((a, index) => {
+              const tier = affixTierOf(a)
+              const tierClass = tierColorClass(tier)
+              return (
+                <div
+                  key={`${affixTextOf(a)}-${index}`}
+                  className={`equip__detail-affix ${tierClass}`}
+                >
+                  <span className={a.corrupted ? 'equip__detail-affix--corrupted' : ''}>
+                    {cleanAffixText(affixDisplayText(a))}
+                    {a.graftSource === 'legend' && a.graftItem ? `（${a.graftItem}）` : ''}
+                  </span>
+                  {tier !== '' && (
+                    <span className={`equip__detail-affix-tier ${tierClass}`}>{`T${tier}`}</span>
+                  )}
+                  <AffixTags affix={a} />
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
 
 function formFromLegend(legend, isNormal = false) {
@@ -418,6 +543,30 @@ function formFromItem(item) {
     graft: null,
     imgPath: item.imgPath || '',
   }
+}
+
+// 库存条目内容签名：判断「从图鉴选中后保存的装备」是否与库存中既有条目完全一致，
+// 一致时直接复用该条目装备，不再新建重复条目
+function itemContentSignature(it) {
+  const affixes = (Array.isArray(it.affixes) ? it.affixes : []).map((a) => ({
+    text: affixTextOf(a),
+    corrupted: !!a.corrupted,
+    graftSource: a.graftSource || '',
+    graftLibrary: a.graftLibrary || '',
+    graftItem: a.graftItem || '',
+    graftTier: a.graftTier === undefined || a.graftTier === null ? '' : String(a.graftTier),
+  }))
+  return JSON.stringify({
+    name: it.name || '',
+    category: it.category || '',
+    subCategory: it.subCategory || '',
+    requiredLevel: it.requiredLevel || '',
+    baseAffix: it.baseAffix || '',
+    corrupted: !!it.corrupted,
+    imgPath: it.imgPath || '',
+    graft: it.graft || null,
+    affixes,
+  })
 }
 
 // 渴瘾装备：新建（选中身体部位）
@@ -568,7 +717,9 @@ function EquipmentPage() {
   function openSlot(slotKey) {
     const item = inventoryItemOf(equipment[slotKey])
     setForm(item ? formFromItem(item) : EMPTY_FORM)
-    setDrawer({ open: true, slotKey, inventoryId: null })
+    // 槽位已有装备时直接编辑该库存条目（否则保存会新建条目，库存里出现同名重复、
+    // 且「已装备」标记落在新条目上，与原装备的装备状态对不上）
+    setDrawer({ open: true, slotKey, inventoryId: equipment[slotKey] || null })
   }
 
   function openInventoryEdit(inventoryId) {
@@ -583,22 +734,27 @@ function EquipmentPage() {
     setForm(EMPTY_FORM)
   }
 
-  function selectEquipmentItem(item) {
-    if (isGraftPart(item.name)) {
-      setForm(formFromGraftPart(item.name))
-      return
-    }
+  // 装备图鉴条目 → 编辑表单
+  function formOfBrowserItem(item) {
+    if (isGraftPart(item.name)) return formFromGraftPart(item.name)
     const legend = LEGEND_ITEMS.find((l) => l.value === item.name)
-    if (legend) {
-      setForm(formFromLegend(legend))
-      return
-    }
+    if (legend) return formFromLegend(legend)
     const normal = NORMAL_ITEMS.find((n) => n.name === item.name)
-    if (normal) {
-      setForm(formFromLegend(normal, true))
-      return
-    }
-    setForm(EMPTY_FORM)
+    if (normal) return formFromLegend(normal, true)
+    return EMPTY_FORM
+  }
+
+  function selectEquipmentItem(item) {
+    const next = formOfBrowserItem(item)
+    setForm(next)
+    // 在图鉴里换成另一件装备时不再复用原条目：保存为新建库存条目，原条目退回库存，
+    // 避免把原来那件装备的数据覆盖掉
+    setDrawer((d) => {
+      if (!d.inventoryId) return d
+      const editing = inventoryItemOf(d.inventoryId)
+      const sameItem = !!editing && editing.name === next.name && editing.category === next.category
+      return sameItem ? d : { ...d, inventoryId: null }
+    })
   }
 
   function toggleAffixCorrupted(affixIndex) {
@@ -681,7 +837,10 @@ function EquipmentPage() {
       }
       return {
         ...f,
-        affixes: [...f.affixes, makeAffix({ text, graftSource: 'legend', graftItem: f.graft.legendItem })],
+        affixes: [
+          ...f.affixes,
+          makeAffix({ text, graftSource: 'legend', graftItem: f.graft.legendItem }),
+        ],
       }
     })
   }
@@ -870,7 +1029,20 @@ function EquipmentPage() {
       id = drawer.inventoryId
       buildStore.updateEquipmentItem(id, item)
     } else {
-      id = buildStore.addEquipmentItem(item)
+      // 从槽位保存、且与库存中某条未穿戴条目内容完全一致时，直接复用该条目装备，
+      // 避免新建重复条目后库存里「同名两件、只有新的那件显示已装备」
+      const reusable =
+        drawer.slotKey &&
+        inventory.find(
+          (it) =>
+            !equippedSlotOf(it.id) && itemContentSignature(it) === itemContentSignature(item)
+        )
+      if (reusable) {
+        id = reusable.id
+        buildStore.updateEquipmentItem(id, item)
+      } else {
+        id = buildStore.addEquipmentItem(item)
+      }
     }
     if (drawer.slotKey) buildStore.setEquipmentSlot(drawer.slotKey, id)
     message.success(formatMessage({ id: 'equip.saved' }))
@@ -907,6 +1079,49 @@ function EquipmentPage() {
     closeDrawer()
   }
 
+  // 库存条目当前所在槽位（未穿戴返回 ''）
+  const equippedSlotOf = (inventoryId) =>
+    SLOT_KEYS.find((k) => equipment[k] === inventoryId) || ''
+
+  // 库存卡「装备」：装备到指定槽位（组合规则校验通过后写入）
+  function equipItemToSlot(item, slotKey) {
+    if (!slotKey) return
+    if (equippedSlotOf(item.id) === slotKey) {
+      message.info(formatMessage({ id: 'equip.alreadyEquipped' }))
+      return
+    }
+    const ruleError = equipRuleError(item, slotKey)
+    if (ruleError) {
+      message.warning(formatMessage({ id: ruleError }))
+      return
+    }
+    buildStore.setEquipmentSlot(slotKey, item.id)
+    message.success(
+      formatMessage({ id: 'equip.equippedToast' }, { slot: slotLabel(slotKey) })
+    )
+  }
+
+  // 单候选槽位（护甲/饰品等）直接装备；多候选槽位（单手武器/戒指）由卡片下拉菜单选择
+  function handleEquipFromInventory(item) {
+    const candidates = slotCandidatesForItem(item)
+    if (candidates.length === 0) {
+      message.warning(formatMessage({ id: 'equip.noMatchingSlot' }))
+      return
+    }
+    equipItemToSlot(item, candidates.find((k) => !equipment[k]) || candidates[0])
+  }
+
+  // 库存卡「卸下」：清空该条目所占槽位，库存条目保留
+  function handleUnequipInventoryItem(inventoryId) {
+    const slotKey = equippedSlotOf(inventoryId)
+    if (!slotKey) {
+      message.info(formatMessage({ id: 'equip.notEquipped' }))
+      return
+    }
+    buildStore.setEquipmentSlot(slotKey, '')
+    message.success(formatMessage({ id: 'equip.unequipped' }))
+  }
+
   function handleRemoveItem(inventoryId) {
     buildStore.removeEquipmentItem(inventoryId)
     if (drawer.inventoryId === inventoryId) closeDrawer()
@@ -932,11 +1147,70 @@ function EquipmentPage() {
     )
   }
 
+  // 已穿戴装备：悬浮展示完整装备信息弹窗（未装备时保留原生 title 提示）
+  function renderSlot(slotKey, size) {
+    const item = inventoryItemOf(equipment[slotKey])
+    const slotEl = (
+      <div
+        key={slotKey}
+        className={`equip__slot equip__slot--${size}`}
+        aria-label={slotLabel(slotKey)}
+        title={item ? undefined : formatMessage({ id: 'equip.slotEmpty' })}
+        onClick={() => openSlot(slotKey)}
+      >
+        {renderSlotInner(slotKey)}
+      </div>
+    )
+    if (!item) return slotEl
+    return (
+      <Popover
+        key={slotKey}
+        content={<EquipmentDetailContent item={item} />}
+        placement="right"
+        mouseEnterDelay={0.15}
+        overlayClassName="equip__detail-popover"
+      >
+        {slotEl}
+      </Popover>
+    )
+  }
+
   function renderInventoryCard(it) {
     const equippedSlotKey = SLOT_KEYS.find((k) => equipment[k] === it.id)
     const rarity = inventoryRarityOf(it)
+    // 可装备槽位：>1 时「装备」按钮展开为槽位菜单（单手武器 → 主手/副手，戒指 → 左戒/右戒）
+    const slotOptions = equippedSlotKey ? [] : slotCandidatesForItem(it)
+    const canEquip = !equippedSlotKey && slotOptions.length > 0
     const graftLegendName = (a) =>
       a.graftSource === 'legend' && a.graftItem ? `（${a.graftItem}）` : ''
+    const equipButton =
+      slotOptions.length > 1 ? (
+        <Dropdown
+          disabled={!canEquip}
+          trigger={['click']}
+          overlay={
+            <Menu onClick={({ key }) => equipItemToSlot(it, key)}>
+              {slotOptions.map((k) => (
+                <Menu.Item key={k}>
+                  <span className="equip__inv-card-slot-option">
+                    {slotLabel(k)}
+                    {equipment[k] ? ` · ${formatMessage({ id: 'equip.equipped' })}` : ''}
+                  </span>
+                </Menu.Item>
+              ))}
+            </Menu>
+          }
+        >
+          <Button size="small" disabled={!canEquip}>
+            {formatMessage({ id: 'equip.equip' })}
+            <DownOutlined className="equip__inv-card-slot-caret" />
+          </Button>
+        </Dropdown>
+      ) : (
+        <Button size="small" disabled={!canEquip} onClick={() => handleEquipFromInventory(it)}>
+          {formatMessage({ id: 'equip.equip' })}
+        </Button>
+      )
     return (
       <div key={it.id} className={`equip__inv-card ${inventoryCardClass(it)}`}>
         <div className="equip__inv-card-thumb">
@@ -989,38 +1263,20 @@ function EquipmentPage() {
                 {tier !== '' && (
                   <span className={`equip__inv-card-affix-tier ${tierClass}`}>{`T${tier}`}</span>
                 )}
-                {a.corrupted && (
-                  <span className="equip__inv-card-corrupted-tag">
-                    {formatMessage({ id: 'equip.corruptedTag' })}
-                  </span>
-                )}
-                {a.graftSource === 'legend' && (
-                  <span className="equip__graft-source-tag">
-                    {formatMessage({ id: 'equip.graftSourceLegend' })}
-                  </span>
-                )}
-                {a.graftSource === 'craft' && (
-                  <span className="equip__graft-source-tag">
-                    {formatMessage({ id: 'equip.graftSourceCraft' })}·{a.graftKind}
-                    {a.graftLibrary ? `·${libLabel(a.graftLibrary)}` : ''}
-                  </span>
-                )}
-                {a.graftSource === 'perfume' && (
-                  <span className={`equip__graft-source-tag ${perfumeTypeClass(a)}`}>
-                    {formatMessage({ id: 'equip.sourcePerfume' })}·{perfumeTypeLabel(a)}
-                  </span>
-                )}
-                {a.graftSource === 'tower' && (
-                  <span className={`equip__graft-source-tag ${a.graftLibrary === '高阶序列' ? 'equip__affix--red' : 'equip__affix--orange'}`}>
-                    {formatMessage({ id: 'equip.sourceTower' })}
-                    {a.graftLibrary ? `·${a.graftLibrary}` : ''}
-                  </span>
-                )}
+                <AffixTags affix={a} />
               </div>
             )
           })}
         </div>
         <div className="equip__inv-card-actions">
+          {equipButton}
+          <Button
+            size="small"
+            disabled={!equippedSlotKey}
+            onClick={() => handleUnequipInventoryItem(it.id)}
+          >
+            {formatMessage({ id: 'equip.unequip' })}
+          </Button>
           <Button size="small" onClick={() => openInventoryEdit(it.id)}>
             {formatMessage({ id: 'equip.edit' })}
           </Button>
@@ -1032,10 +1288,10 @@ function EquipmentPage() {
     )
   }
 
-  const drawerTitle = drawer.inventoryId
-    ? formatMessage({ id: 'equip.editTitle' })
-    : drawer.slotKey
-      ? `${formatMessage({ id: 'equip.editTitle' })} · ${slotLabel(drawer.slotKey)}`
+  const drawerTitle = drawer.slotKey
+    ? `${formatMessage({ id: 'equip.editTitle' })} · ${slotLabel(drawer.slotKey)}`
+    : drawer.inventoryId
+      ? formatMessage({ id: 'equip.editTitle' })
       : formatMessage({ id: 'equip.craftNewItem' })
 
   return (
@@ -1043,10 +1299,12 @@ function EquipmentPage() {
       <div className="equip__header">
         <h2 className="equip__title">{formatMessage({ id: 'tab.equipment' })}</h2>
         <div className="equip__header-actions">
-          <Button size="small" onClick={() => modulePresetStore.openDrawer('equipment')}>
-            {formatMessage({ id: 'preset.open' })}
-          </Button>
-          <Button size="small" disabled={!SLOT_KEYS.some((k) => equipment[k])} onClick={handleUnequipAll}>
+          <ModulePresetButton module="equipment" />
+          <Button
+            size="small"
+            disabled={!SLOT_KEYS.some((k) => equipment[k])}
+            onClick={handleUnequipAll}
+          >
             {formatMessage({ id: 'equip.unequipAll' })}
           </Button>
         </div>
@@ -1054,43 +1312,15 @@ function EquipmentPage() {
 
       <div className="equip__bar">
         <div className="equip__slots">
-          <div
-            className="equip__slot equip__slot--lg"
-            aria-label={slotLabel('mainHand')}
-            title={equipment.mainHand ? inventoryItemOf(equipment.mainHand)?.name : formatMessage({ id: 'equip.slotEmpty' })}
-            onClick={() => openSlot('mainHand')}
-          >
-            {renderSlotInner('mainHand')}
-          </div>
-          <div
-            className="equip__slot equip__slot--lg"
-            aria-label={slotLabel('offHand')}
-            title={equipment.offHand ? inventoryItemOf(equipment.offHand)?.name : formatMessage({ id: 'equip.slotEmpty' })}
-            onClick={() => openSlot('offHand')}
-          >
-            {renderSlotInner('offHand')}
-          </div>
-          <div className="equip__slots-sm">
-            {SMALL_SLOT_KEYS.map((k) => (
-              <div
-                key={k}
-                className="equip__slot equip__slot--sm"
-                aria-label={slotLabel(k)}
-                title={equipment[k] ? inventoryItemOf(equipment[k])?.name : formatMessage({ id: 'equip.slotEmpty' })}
-                onClick={() => openSlot(k)}
-              >
-                {renderSlotInner(k)}
-              </div>
-            ))}
-          </div>
+          {renderSlot('mainHand', 'lg')}
+          {renderSlot('offHand', 'lg')}
+          <div className="equip__slots-sm">{SMALL_SLOT_KEYS.map((k) => renderSlot(k, 'sm'))}</div>
         </div>
       </div>
 
       <div className="equip__inventory">
         <div className="equip__inventory-head">
-          <div className="equip__panel-title">
-            {formatMessage({ id: 'equip.inventoryTitle' })}
-          </div>
+          <div className="equip__panel-title">{formatMessage({ id: 'equip.inventoryTitle' })}</div>
           <div className="equip__inv-toolbar">
             <Select
               className="equip__inv-filter"
@@ -1124,7 +1354,11 @@ function EquipmentPage() {
         <div className="equip__edit-body">
           <div className="equip__edit-preview">
             {form.imgPath ? (
-              <img src={encodeURI(form.imgPath)} alt={form.name} className="equip__edit-preview-img" />
+              <img
+                src={encodeURI(form.imgPath)}
+                alt={form.name}
+                className="equip__edit-preview-img"
+              />
             ) : (
               <img
                 src={drawer.slotKey ? SLOT_ICONS[drawer.slotKey] : SLOT_ICONS.mainHand}
@@ -1156,7 +1390,11 @@ function EquipmentPage() {
                     }`}
                     onClick={() => equipInventoryItem(it.id)}
                   >
-                    <img src={encodeURI(it.imgPath)} alt={it.name} className="equip__edit-pick-img" />
+                    <img
+                      src={encodeURI(it.imgPath)}
+                      alt={it.name}
+                      className="equip__edit-pick-img"
+                    />
                     <div className="equip__edit-pick-name">{it.name}</div>
                     {equippedItem?.id === it.id && (
                       <div className="equip__edit-pick-badge">
@@ -1171,15 +1409,21 @@ function EquipmentPage() {
 
           <div className="equip__edit-info">
             <div className="equip__edit-info-row">
-              <span className="equip__edit-info-label">{formatMessage({ id: 'equip.category' })}</span>
+              <span className="equip__edit-info-label">
+                {formatMessage({ id: 'equip.category' })}
+              </span>
               <span className="equip__edit-info-value">{form.category || '--'}</span>
             </div>
             <div className="equip__edit-info-row">
-              <span className="equip__edit-info-label">{formatMessage({ id: 'equip.subCategory' })}</span>
+              <span className="equip__edit-info-label">
+                {formatMessage({ id: 'equip.subCategory' })}
+              </span>
               <span className="equip__edit-info-value">{form.subCategory || '--'}</span>
             </div>
             <div className="equip__edit-info-row">
-              <span className="equip__edit-info-label">{formatMessage({ id: 'equip.requiredLevel' })}</span>
+              <span className="equip__edit-info-label">
+                {formatMessage({ id: 'equip.requiredLevel' })}
+              </span>
               <span className="equip__edit-info-value">{form.requiredLevel || '--'}</span>
             </div>
           </div>
@@ -1240,15 +1484,11 @@ function EquipmentPage() {
                         <button
                           key={text}
                           type="button"
-                          className={`equip__graft-legend-affix ${
-                            active ? 'is-active' : ''
-                          }`}
+                          className={`equip__graft-legend-affix ${active ? 'is-active' : ''}`}
                           onClick={() => toggleGraftLegendAffix(text)}
                         >
                           {cleanAffixText(text)}
-                          {active && (
-                            <span className="equip__graft-legend-count">✓</span>
-                          )}
+                          {active && <span className="equip__graft-legend-count">✓</span>}
                         </button>
                       )
                     })}
@@ -1369,7 +1609,8 @@ function EquipmentPage() {
                   <div className="equip__graft-perfume">
                     <div className="equip__edit-affixes-title">
                       {formatMessage({ id: 'equip.perfume' })}（
-                      {form.affixes.filter((a) => a.graftSource === 'perfume').length}/{MAX_PERFUME}）
+                      {form.affixes.filter((a) => a.graftSource === 'perfume').length}/{MAX_PERFUME}
+                      ）
                     </div>
                     <Select
                       className="equip__graft-select"
@@ -1448,7 +1689,9 @@ function EquipmentPage() {
                         <div
                           key={`${affixTextOf(a)}-${i}`}
                           className={`equip__edit-affix ${
-                            a.graftLibrary === '高阶序列' ? 'equip__affix--red' : 'equip__affix--orange'
+                            a.graftLibrary === '高阶序列'
+                              ? 'equip__affix--red'
+                              : 'equip__affix--orange'
                           }`}
                         >
                           <div className="equip__edit-affix-row">
@@ -1494,7 +1737,11 @@ function EquipmentPage() {
                         const e = normalCraftPool.prefix[v]
                         if (e) addNormalCrafted(e, '前缀')
                       }}
-                      options={affixOptionGroups(normalCraftPool.prefix, selectedAffixFamilies, libLabel)}
+                      options={affixOptionGroups(
+                        normalCraftPool.prefix,
+                        selectedAffixFamilies,
+                        libLabel
+                      )}
                     />
                     <Select
                       className="equip__graft-select"
@@ -1507,7 +1754,11 @@ function EquipmentPage() {
                         const e = normalCraftPool.suffix[v]
                         if (e) addNormalCrafted(e, '后缀')
                       }}
-                      options={affixOptionGroups(normalCraftPool.suffix, selectedAffixFamilies, libLabel)}
+                      options={affixOptionGroups(
+                        normalCraftPool.suffix,
+                        selectedAffixFamilies,
+                        libLabel
+                      )}
                     />
                   </div>
                 </div>
@@ -1524,29 +1775,32 @@ function EquipmentPage() {
                     .map((a, i) => ({ a, i }))
                     .filter(({ a }) => a.graftSource === 'craft')
                     .map(({ a, i }) => (
-                    <div
-                      key={`${affixTextOf(a)}-${i}`}
-                      className={`equip__edit-affix ${tierColorClass(affixTierOf(a))}`}
-                    >
-                      <div className="equip__edit-affix-row">
-                        <div className="equip__edit-affix-text">
-                          {cleanAffixText(affixDisplayText(a))}
-                          <span className="equip__graft-source-tag">
-                            {formatMessage({ id: 'equip.graftSourceCraft' })}·{a.graftKind}
-                            {a.graftLibrary ? `·${libLabel(a.graftLibrary)}` : ''}
-                          </span>
+                      <div
+                        key={`${affixTextOf(a)}-${i}`}
+                        className={`equip__edit-affix ${tierColorClass(affixTierOf(a))}`}
+                      >
+                        <div className="equip__edit-affix-row">
+                          <div className="equip__edit-affix-text">
+                            {cleanAffixText(affixDisplayText(a))}
+                            <span className="equip__graft-source-tag">
+                              {formatMessage({ id: 'equip.graftSourceCraft' })}·{a.graftKind}
+                              {a.graftLibrary ? `·${libLabel(a.graftLibrary)}` : ''}
+                            </span>
+                          </div>
+                          <Button
+                            size="small"
+                            className="equip__edit-affix-erode"
+                            onClick={() => removeNormalAffix(i)}
+                          >
+                            {formatMessage({ id: 'equip.graftRemove' })}
+                          </Button>
                         </div>
-                        <Button
-                          size="small"
-                          className="equip__edit-affix-erode"
-                          onClick={() => removeNormalAffix(i)}
-                        >
-                          {formatMessage({ id: 'equip.graftRemove' })}
-                        </Button>
+                        <AffixRangeSliders
+                          affix={a}
+                          onChange={(j, v) => updateAffixValue(i, j, v)}
+                        />
                       </div>
-                      <AffixRangeSliders affix={a} onChange={(j, v) => updateAffixValue(i, j, v)} />
-                    </div>
-                  ))}
+                    ))}
                 </div>
               )}
             </>
@@ -1554,14 +1808,18 @@ function EquipmentPage() {
             <>
               {form.baseAffix && (
                 <div className="equip__edit-affixes">
-                  <div className="equip__edit-affixes-title">{formatMessage({ id: 'equip.baseAffix' })}</div>
+                  <div className="equip__edit-affixes-title">
+                    {formatMessage({ id: 'equip.baseAffix' })}
+                  </div>
                   <div className="equip__edit-affix">{cleanAffixText(form.baseAffix)}</div>
                 </div>
               )}
 
               {form.affixes.length > 0 && (
                 <div className="equip__edit-affixes">
-                  <div className="equip__edit-affixes-title">{formatMessage({ id: 'equip.affixes' })}</div>
+                  <div className="equip__edit-affixes-title">
+                    {formatMessage({ id: 'equip.affixes' })}
+                  </div>
                   {form.affixes.map((a, i) => {
                     const pool = legendPools[i]
                     const hasPool = pool && (pool.normal.length > 0 || pool.eroded.length > 0)
@@ -1616,7 +1874,10 @@ function EquipmentPage() {
                             </Button>
                           )}
                         </div>
-                        <AffixRangeSliders affix={a} onChange={(j, v) => updateAffixValue(i, j, v)} />
+                        <AffixRangeSliders
+                          affix={a}
+                          onChange={(j, v) => updateAffixValue(i, j, v)}
+                        />
                       </div>
                     )
                   })}

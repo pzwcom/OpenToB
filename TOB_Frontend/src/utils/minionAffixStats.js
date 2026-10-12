@@ -7,14 +7,17 @@ import {
   collectSkillAffixTexts,
   collectTalentAffixTexts,
   computeWarmBreezeCap,
+  computeWarmBreezeGrowth,
 } from './affixAggregation.js'
-import { applyTetherCap, applyWarmBreezeCap } from './combatStates.js'
+import { applyTetherCap, applyWarmBreezeCap, applyWarmBreezeGrowth } from './combatStates.js'
 import { forEachGatedClause } from './conditionClauses.js'
 import {
   CRIT_DMG_RE,
   CRIT_VALUE_PCT_RE,
   CRIT_VALUE_FLAT_RE,
   SPIRIT_SOURCE_RE,
+  SPIRIT_SOURCE_GROWTH_RE,
+  EMPOWERED_SKILL_RE,
   DOUBLE_DMG_RE,
   ELEM_PEN_RE,
   ELEM_CORR_PEN_RE,
@@ -68,6 +71,8 @@ function emptyAcc() {
     erosionPen: 0,
     spiritSourceEffect: 0,
     doubleDamageChance: 0,
+    // 强化技能使用几率（守望的暖风 让清风吹拂：魔灵+X%强化技能使用几率）
+    empoweredSkillChance: 0,
     countCap: 0,
     countCapFixed: null,
     atkSpeed: 0,
@@ -81,6 +86,12 @@ function emptyAcc() {
     tetherAtCapMore: 0,
     tetherPerCrit: 0,
     tetherPerMore: 0,
+    // 守望的暖风：暖风满层上限（10 + 上限词缀）、暖风折算后的实际生长值
+    warmBreezeCap: 0,
+    warmBreezeStacks: 0,
+    growthValue: 0,
+    warmBreezeGrowthPerStack: 0,
+    warmBreezeGrowthBonus: 0,
     detail: {
       critDamage: [],
       critValueFlat: [],
@@ -92,6 +103,8 @@ function emptyAcc() {
       erosionPen: [],
       spiritSourceEffect: [],
       doubleDamageChance: [],
+      empoweredSkillChance: [],
+      warmBreezeGrowth: [],
       countCap: [],
       atkSpeed: [],
       castSpeed: [],
@@ -133,13 +146,26 @@ export function aggregateMinionAffixStats(build) {
   const acc = emptyAcc()
   const { detail } = acc
   const tetherCap = computeTetherCap(build)
-  const states = applyWarmBreezeCap(
-    applyTetherCap(build && build.configuration, tetherCap),
-    computeWarmBreezeCap()
+  // 暖风满层上限：基础 10 + 特性「让清风吹拂/最温暖的守望」的上限词缀（重聚状态时前者失效）。
+  const warmBreezeCap = computeWarmBreezeCap(build, build && build.configuration)
+  // 人造月亮「每拥有1层暖风，+N生长值」→ 折算进实际生长值（供 growthPerPoint / 魔灵之源折算消费）。
+  const warmBreezeGrowth = computeWarmBreezeGrowth(build)
+  const states = applyWarmBreezeGrowth(
+    applyWarmBreezeCap(applyTetherCap(build && build.configuration, tetherCap), warmBreezeCap),
+    warmBreezeGrowth.perStack
   )
   acc.tetherCap = tetherCap
   acc.tetherStacks = states.tetherStacks
+  acc.warmBreezeCap = states.warmBreezeCap
   acc.warmBreezeStacks = states.warmBreezeStacks
+  acc.growthValue = states.growthValue
+  acc.warmBreezeGrowthPerStack = states.warmBreezeGrowthPerStack
+  acc.warmBreezeGrowthBonus = states.warmBreezeGrowthBonus
+  for (const seg of warmBreezeGrowth.segments) {
+    if (states.warmBreezeGrowthBonus > 0) {
+      detail.warmBreezeGrowth.push({ module: 'hero', text: seg, value: states.warmBreezeGrowthBonus })
+    }
+  }
 
   const add = (key, module, segment, value) => {
     acc[key] += value
@@ -176,6 +202,26 @@ export function aggregateMinionAffixStats(build) {
     return rest
   }
 
+  // 汇入本源的河流：`魔灵每有N点生长值，额外X%魔灵受到的魔灵之源效果` 是跨子句（`，` 分隔）的句子，
+  // 且首子句「每有…」会被 LEADING_COND_RE 当未映射条件 → forEachGatedClause 会整句跳过（这正是原先未消费的原因）。
+  // 因此按段（`；`）预扫描，命中即按实际生长值折算并整段剔除（思路与 extractTether 一致）。
+  const processSpiritSourceGrowth = (raw, modKey) => {
+    const kept = []
+    for (const seg of String(raw || '').split(/[;；]/)) {
+      const m = seg.match(SPIRIT_SOURCE_GROWTH_RE)
+      if (m) {
+        const div = parseFloat(m[1])
+        const pct = parseFloat(m[2])
+        if (div > 0 && Number.isFinite(pct)) {
+          add('spiritSourceEffect', modKey, seg, Math.floor((states.growthValue || 0) / div) * pct)
+          continue
+        }
+      }
+      kept.push(seg)
+    }
+    return kept.join('；')
+  }
+
   for (const mod of MODULES) {
     const texts = mod.collect(build)
     // 神格石板词缀带「神格生效上限：1」时，同类文本只生效一次（与 computeTetherCap 去重口径一致）
@@ -187,7 +233,7 @@ export function aggregateMinionAffixStats(build) {
         if (seenDiv.has(key)) continue
         seenDiv.add(key)
       }
-      const rest = processTether(raw, mod.key)
+      const rest = processSpiritSourceGrowth(processTether(raw, mod.key), mod.key)
       if (!rest) continue
       forEachGatedClause(rest, states, (text) => {
         let m = text.match(CRIT_DMG_RE)
@@ -201,6 +247,10 @@ export function aggregateMinionAffixStats(build) {
 
         m = text.match(SPIRIT_SOURCE_RE)
         if (m) add('spiritSourceEffect', mod.key, text, matchValue(m))
+
+        // 让清风吹拂：魔灵+X%强化技能使用几率
+        m = text.match(EMPOWERED_SKILL_RE)
+        if (m) add('empoweredSkillChance', mod.key, text, matchValue(m))
 
         m = text.match(DOUBLE_DMG_RE)
         if (m) add('doubleDamageChance', mod.key, text, matchValue(m))

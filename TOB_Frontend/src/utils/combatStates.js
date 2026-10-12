@@ -77,6 +77,24 @@ export const combatStates = {
     requires: ['heroTrait:守望的暖风'],
     label: 'state.warmBreeze',
   },
+  // 守望状态：守望的暖风特性——释放特性技能与魔灵融合后进入，被融合魔灵获得暖风。
+  // 「守望状态期间，…」类词缀（化身万物的暖风承伤、最喜悦的重逢每魔灵增伤）由该开关门控。
+  watchState: {
+    category: 'selfBuff',
+    kind: 'toggle',
+    default: false,
+    label: 'state.watchState',
+    requires: ['heroTrait:守望的暖风'],
+  },
+  // 重聚状态：魔灵重聚期间停止获得暖风并流失（非重聚状态每秒消耗生命）。
+  // 「持续至进入重聚状态」（让清风吹拂 暖风上限增益）与「非重聚状态」类词缀由该开关门控。
+  reunionState: {
+    category: 'selfBuff',
+    kind: 'toggle',
+    default: false,
+    label: 'state.reunionState',
+    requires: ['heroTrait:守望的暖风'],
+  },
   // ===== 各英雄机制状态（类似暖风/怒火爆发）：requires 指定英雄 → 仅该英雄展示并联动引擎 =====
   // 弹药：投射物英雄共用（消耗弹药时 门控伤害）。开关 = 消耗弹药中。
   ammo: {
@@ -389,6 +407,22 @@ export function applyWarmBreezeCap(raw, cap) {
   const c = Math.max(0, Number(cap) || 0)
   return {
     ...states,
+    warmBreezeCap: c,
     warmBreezeStacks: states.warmBreezeStacks > 0 ? c : 0,
+  }
+}
+
+// 暖风 → 生长值折算（守望的暖风 人造月亮：每拥有1层暖风，+N生长值）。
+// 纯函数：接收已归一化的 states，返回附加派生字段的新对象。
+// 故意不调用 normalizeStates——那会丢掉 applyTetherCap/applyWarmBreezeCap 附加的 cap 字段。
+export function applyWarmBreezeGrowth(states, perStack) {
+  const s = states || {}
+  const per = Number(perStack) || 0
+  const bonus = per > 0 ? per * (s.warmBreezeStacks || 0) : 0
+  return {
+    ...s,
+    warmBreezeGrowthPerStack: per,
+    warmBreezeGrowthBonus: bonus,
+    growthValue: (Number(s.growthValue) || 0) + bonus,
   }
 }

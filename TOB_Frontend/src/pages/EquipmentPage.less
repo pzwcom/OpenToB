@@ -321,7 +321,18 @@
 
   &__inv-card-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 6px;
+  }
+
+  // 「装备」下拉（单手武器 → 主手/副手、戒指 → 左戒/右戒）
+  &__inv-card-slot-caret {
+    margin-left: 4px;
+    font-size: 10px;
+  }
+
+  &__inv-card-slot-option {
+    font-size: 12px;
   }
 
   // ===== 装备编辑 Drawer =====
@@ -643,6 +654,101 @@
 
   &__affix--red {
     color: #ef4444;
+  }
+
+  // ===== 已穿戴装备悬浮详情（Popover，portal 到 body 后仍命中扁平类） =====
+
+  &__detail-popover {
+    .ant-popover-inner-content {
+      padding: 10px 12px;
+    }
+  }
+
+  &__detail {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 300px;
+    max-width: 340px;
+    font-size: 12px;
+    color: var(--text-300);
+  }
+
+  &__detail-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  &__detail-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-100);
+    word-break: break-all;
+  }
+
+  &__detail-name--legend {
+    color: #f59e0b;
+  }
+
+  &__detail-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__detail-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  &__detail-label {
+    flex-shrink: 0;
+    color: var(--text-500);
+  }
+
+  &__detail-row &__detail-label {
+    width: 64px;
+  }
+
+  &__detail-value {
+    flex: 1;
+    min-width: 0;
+    color: var(--text-300);
+    word-break: break-all;
+  }
+
+  &__detail-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__detail-base,
+  &__detail-affix {
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.25);
+    line-height: 1.5;
+    word-break: break-all;
+  }
+
+  &__detail-affixes {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  &__detail-affix--corrupted {
+    color: #ef4444;
+  }
+
+  &__detail-affix-tier {
+    margin-left: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
   }
 }
 
